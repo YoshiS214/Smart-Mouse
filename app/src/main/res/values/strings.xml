@@ -12,4 +12,5 @@
     <string name="menu_touchpad">Touchpad</string>
     <string name="mouse_3D">3D</string>
     <string name="mouse_2D">2D</string>
+    <string name="input_text">Type here...</string>
 </resources>

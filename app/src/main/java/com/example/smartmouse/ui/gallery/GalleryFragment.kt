@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.smartmouse.R
+import com.google.android.material.textfield.TextInputEditText
 
 class GalleryFragment : Fragment() {
 
@@ -22,9 +23,9 @@ class GalleryFragment : Fragment() {
         galleryViewModel =
                 ViewModelProviders.of(this).get(GalleryViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_gallery, container, false)
-        val textView: TextView = root.findViewById(R.id.text_gallery)
+        val textInput: TextInputEditText = root.findViewById(R.id.input_text)
         galleryViewModel.text.observe(viewLifecycleOwner, Observer {
-            textView.text = it
+            textInput.hint = it
         })
         return root
     }

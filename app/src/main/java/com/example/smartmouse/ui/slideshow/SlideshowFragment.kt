@@ -1,6 +1,7 @@
 package com.example.smartmouse.ui.slideshow
 
 import android.os.Bundle
+import android.view.GestureDetector
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,10 +23,7 @@ class SlideshowFragment : Fragment() {
         slideshowViewModel =
                 ViewModelProviders.of(this).get(SlideshowViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_slideshow, container, false)
-        val textView: TextView = root.findViewById(R.id.text_slideshow)
-        slideshowViewModel.text.observe(viewLifecycleOwner, Observer {
-            textView.text = it
-        })
+        val gesture : GestureDetector = GestureDetector(context, GestureDetector.SimpleOnGestureListener())
         return root
     }
 }
