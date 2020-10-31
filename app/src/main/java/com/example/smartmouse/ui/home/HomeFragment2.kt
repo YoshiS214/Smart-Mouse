@@ -12,28 +12,30 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.smartmouse.R
 
-class HomeFragment : Fragment() {
+class HomeFragment2 : Fragment() {
 
     override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_home, container, false)
+        return inflater.inflate(R.layout.fragment_home2, container, false)
 
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val AirMouseButton: Button = view.findViewById(R.id.button_airmouse)
+        val LeftButton: Button = view.findViewById(R.id.button_left)
+        val RightButton: Button = view.findViewById(R.id.button_right)
+        val UpButton: Button = view.findViewById(R.id.button_up)
+        val DownButton: Button = view.findViewById(R.id.button_down)
         val MouseState: Button = view.findViewById(R.id.button_state)
-        AirMouseButton.setOnClickListener { }
+        LeftButton.setOnClickListener { }
+        RightButton.setOnClickListener {  }
+        UpButton.setOnClickListener {  }
+        DownButton.setOnClickListener {  }
         MouseState.setOnClickListener {
-            val homeFragment2 = HomeFragment2()
-            val fragmentTransaction = fragmentManager?.beginTransaction()
-            fragmentTransaction?.addToBackStack(null)
-            fragmentTransaction?.replace(R.id.nav_host_fragment, homeFragment2)
-            fragmentTransaction?.commit()
+            fragmentManager?.popBackStack()
         }
     }
 }
