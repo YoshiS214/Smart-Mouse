@@ -13,4 +13,9 @@
     <string name="mouse_3D">3D</string>
     <string name="mouse_2D">2D</string>
     <string name="input_text">Type here...</string>
+    <string name="connect">CONNECT</string>
+    <string name="set_connect">Connect to a computer</string>
+    <string name="be_HID">Act as HID devices</string>
+
+    <string name = "ble_uuid">00001124-0000-1000-8000-00805f9b34fb</string>
 </resources>

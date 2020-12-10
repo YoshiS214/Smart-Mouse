@@ -16,5 +16,9 @@
             android:id="@+id/nav_touchpad"
             android:icon="@drawable/ic_baseline_touch_app_24"
             android:title="@string/menu_touchpad" />
+        <item
+            android:id="@+id/nav_setting"
+            android:icon="@drawable/ic_baseline_settings_24"
+            android:title="@string/action_settings" />
     </group>
 </menu>
