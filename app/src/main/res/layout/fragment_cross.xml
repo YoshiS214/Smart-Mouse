@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TableLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TableRow
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#00FFFFFF"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/button_upArrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="90dp"
+                android:minHeight="120dp"
+                android:scaleType="center"
+                android:scaleX="5"
+                android:scaleY="5"
+                app:srcCompat="@drawable/ic_baseline_keyboard_arrow_up_24" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/button_leftArrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="90dp"
+                android:minHeight="120dp"
+                android:scaleType="center"
+                android:scaleX="5"
+                android:scaleY="5"
+                app:srcCompat="@drawable/ic_baseline_keyboard_arrow_left_24" />
+
+            <ImageButton
+                android:id="@+id/button_leftClick"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="90dp"
+                android:minHeight="120dp"
+                android:scaleType="center"
+                android:scaleX="5"
+                android:scaleY="5"
+                app:srcCompat="@drawable/ic_semicircle_left" />
+
+            <ImageButton
+                android:id="@+id/button_rightClick"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="90dp"
+                android:minHeight="120dp"
+                android:scaleType="center"
+                android:scaleX="5"
+                android:scaleY="5"
+                app:srcCompat="@drawable/ic_semicircle_right" />
+
+            <ImageButton
+                android:id="@+id/button_rightArrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="90dp"
+                android:minHeight="120dp"
+                android:scaleType="center"
+                android:scaleX="5"
+                android:scaleY="5"
+                app:srcCompat="@drawable/ic_baseline_keyboard_arrow_right_24" />
+
+        </TableRow>
+
+        <TableRow
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/button_downArrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="90dp"
+                android:minHeight="120dp"
+                android:scaleType="center"
+                android:scaleX="5"
+                android:scaleY="5"
+                app:srcCompat="@drawable/ic_baseline_keyboard_arrow_down_24" />
+        </TableRow>
+
+    </TableLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

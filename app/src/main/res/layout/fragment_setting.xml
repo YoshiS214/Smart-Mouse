@@ -87,6 +87,12 @@
                     android:text="@string/set_connect"
                     android:textColor="#FFFFFF" />
 
+                <Spinner
+                    android:id="@+id/spinner_DeviceName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+
                 <Space
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

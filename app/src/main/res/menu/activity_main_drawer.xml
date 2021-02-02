@@ -9,6 +9,11 @@
             android:icon="@drawable/ic_baseline_mouse_24"
             android:title="@string/menu_mouse" />
         <item
+            android:id="@id/nav_cross"
+            android:icon="@drawable/ic_baseline_open_with_24"
+            android:title="@string/menu_cross"/>
+
+        <item
             android:id="@+id/nav_keyboard"
             android:icon="@drawable/ic_baseline_keyboard_24"
             android:title="@string/menu_keyboard" />

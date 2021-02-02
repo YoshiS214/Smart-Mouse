@@ -1,5 +1,6 @@
 package com.example.smartmouse
 
+import android.app.Application
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -14,13 +15,15 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.smartmouse.bluetooth.BLE
+import com.example.smartmouse.bluetooth.Mouse
 import com.example.smartmouse.ui.setting.SettingFragment
 import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.internal.artificialFrame
 
-class MainActivity : AppCompatActivity() {
-
+class MainActivity : AppCompatActivity(){
     private lateinit var appBarConfiguration: AppBarConfiguration
+    private lateinit var mouse: Mouse
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,12 +36,17 @@ class MainActivity : AppCompatActivity() {
         val navController = findNavController(R.id.nav_host_fragment)
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
+
+        mouse = Mouse(this)
+        mouse.setPeripheralProvider()
+
         appBarConfiguration = AppBarConfiguration(setOf(
-                R.id.nav_mouse, R.id.nav_keyboard, R.id.nav_touchpad, R.id.nav_setting), drawerLayout)
+            R.id.nav_mouse, R.id.nav_cross, R.id.nav_keyboard, R.id.nav_touchpad, R.id.nav_setting), drawerLayout)
+
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
-        BLE.initialise()
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -51,4 +59,9 @@ class MainActivity : AppCompatActivity() {
         val navController = findNavController(R.id.nav_host_fragment)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
+
+    fun getMouse(): Mouse{
+        return mouse
+    }
+
 }
