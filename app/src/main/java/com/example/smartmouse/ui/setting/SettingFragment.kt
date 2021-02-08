@@ -1,4 +1,4 @@
-package com.example.smartmouse.ui.setting
+package com.example.smartmouse.UI.setting
 
 import android.content.Context
 import android.os.Bundle
@@ -24,6 +24,7 @@ class SettingFragment : Fragment(){
     ): View? {
         mainActivity = activity as MainActivity
         mouse = mainActivity.getMouse()
+        mouse.setPeripheralProvider()
         return inflater.inflate(R.layout.fragment_setting, container, false)
 
     }
@@ -44,7 +45,7 @@ class SettingFragment : Fragment(){
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                 deviceNameSpinner.adapter = adapter
             }
-            handler.postDelayed(runnable, 30000)
+            handler.postDelayed(runnable, 10000)
         }
 
         var deviceName: String = ""
@@ -71,10 +72,12 @@ class SettingFragment : Fragment(){
                 compoundButton.setOnClickListener{
                     //BLE.enableBLE()
                     mouse.start()
+                    mainActivity.updateMouse(mouse)
                 }
             }else{
                 compoundButton.setOnClickListener{
                     mouse.stop()
+                    mainActivity.updateMouse(mouse)
                     //BLE.disableBLE()
                 }
             }
@@ -82,6 +85,8 @@ class SettingFragment : Fragment(){
 
         connectButton.setOnClickListener {
             mouse.connect(deviceName)
+            mainActivity.updateMouse(mouse)
+            mouse.storeData()
         }
     }
 

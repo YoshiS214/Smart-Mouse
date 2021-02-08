@@ -31,7 +31,7 @@
 
     <fragment
         android:id="@+id/nav_setting"
-        android:name="com.example.smartmouse.ui.setting.SettingFragment"
+        android:name="com.example.smartmouse.UI.setting.SettingFragment"
         android:label="@string/action_settings"
         tools:layout="@layout/fragment_setting"/>
 

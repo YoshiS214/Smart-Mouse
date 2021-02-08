@@ -54,4 +54,12 @@ class MousePeripheral: BLE() {
         super.connect(name)
     }
 
+    override fun connectedDeviceName(): Array<String> {
+        return super.connectedDeviceName()
+    }
+
+    override fun saveData() {
+        super.saveData()
+    }
+
 }

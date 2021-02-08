@@ -52,4 +52,12 @@ class Mouse(var context: Context): BLEActivity() {
     fun connect(name: String){
         mouse.connect(name)
     }
+
+    fun connectedDeviceName():Array<String>{
+        return mouse.connectedDeviceName()
+    }
+
+    fun storeData(){
+        mouse.saveData()
+    }
 }

@@ -17,6 +17,7 @@ import android.os.ParcelUuid
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import com.example.smartmouse.DataStore
 import com.example.smartmouse.R
 import java.lang.Exception
 import java.nio.charset.Charset
@@ -56,7 +57,7 @@ abstract class BLE{
 
     private val uuidLast24: String = "-0000-1000-8000-00805F9B34FB"
 
-    private val deviceName: String = android.os.Build.DEVICE
+    private val deviceName: String = android.os.Build.DEVICE.plus("-SmartMouse")
     private val manufactureName: String = android.os.Build.MANUFACTURER
     private val serialNumber: String = android.os.Build.ID
     private var batteryPercentage: Int = 0
@@ -99,6 +100,7 @@ abstract class BLE{
     lateinit var scanResult: AdvertiseData
     lateinit var callback: AdvertiseCallback
     lateinit var bleDevices: Array<BluetoothDevice>
+    lateinit var connectedDevices: Array<BluetoothDevice>
 
     private var gattCallback: BluetoothGattServerCallback = object : BluetoothGattServerCallback(){
         override fun onConnectionStateChange(
@@ -127,7 +129,10 @@ abstract class BLE{
 
                         if (!bleDevices.contains(device)){
                             bleDevices = bleDevices.plus(device)
-                            Log.d("DEVICE", "霑ｽ蜉縺励◆繧・)
+                            Log.d("DEVICE", "追加したよ")
+                        }
+                        if (!connectedDevices.contains(device)){
+                            connectedDevices = connectedDevices.plus(device)
                         }
                     }
                 }
@@ -141,6 +146,9 @@ abstract class BLE{
                         if (!bleDevices.contains(device)){
                             //bleDevices = bleDevices.filterNot { x -> x==device }.toTypedArray()
                         }
+                        if (!connectedDevices.contains(device)){
+                            connectedDevices = connectedDevices.plus(device)
+                        }
                     }
                 }
                 BluetoothProfile.STATE_DISCONNECTING ->{
@@ -153,6 +161,9 @@ abstract class BLE{
                         if (!bleDevices.contains(device)){
                             //bleDevices = bleDevices.filterNot { x -> x==device }.toTypedArray()
                         }
+                        if (connectedDevices.contains(device)){
+                            connectedDevices = connectedDevices.filterNot { x -> x==device }.toTypedArray()
+                        }
                     }
                 }
                 BluetoothProfile.STATE_DISCONNECTED ->{
@@ -164,6 +175,9 @@ abstract class BLE{
                         }
                         if (!bleDevices.contains(device)){
                             //bleDevices = bleDevices.filterNot { x -> x==device }.toTypedArray()
+                        }
+                        if (connectedDevices.contains(device)){
+                            connectedDevices = connectedDevices.filterNot { x -> x==device }.toTypedArray()
                         }
                     }
                 }
@@ -364,7 +378,8 @@ abstract class BLE{
         addService(getDeviceInfoService())
         addService(getBatteryService())
 
-        bleDevices = arrayOf()
+        bleDevices = DataStore.getBleDevices(appContext)
+        connectedDevices = arrayOf()
 
         var task: TimerTask = object: TimerTask(){
             override fun run() {
@@ -650,16 +665,32 @@ abstract class BLE{
                 device.createBond()
             }
 
-            handler.post {
-                if (gattServer != null){
+            if (gattServer != null){
+                try {
+                    device.createInsecureRfcommSocketToServiceRecord(hidService).connect()
+                }catch (e: Exception){
                     gattServer.connect(device, true)
                 }
+
+                Log.d("Device", "${device.name}に繋げるよ")
             }
         }
     }
 
+    open fun connectedDeviceName():Array<String>{
+        var names: Array<String> = arrayOf()
+        for (x in connectedDevices){
+            names.plus(x.name)
+        }
+        return names
+    }
+
+    open fun saveData(){
+        DataStore.writeBleDevices(appContext, bleDevices)
+    }
+
     private fun getUUID(uuid_short: Int): UUID{
-        return UUID.fromString("%08X".format(uuid_short)+uuidLast24)
+        return UUID.fromString("%08X".format(uuid_short) + uuidLast24)
     }
 
 
