@@ -1,6 +1,8 @@
 package com.example.smartmouse.UI.setting
 
+import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
@@ -34,6 +36,7 @@ class SettingFragment : Fragment(){
         val peripheralSwitch: Switch = view.findViewById(R.id.switch_peripheral)
         val connectButton: Button = view.findViewById(R.id.button_BLEconnect)
         val deviceNameSpinner: Spinner = view.findViewById(R.id.spinner_DeviceName)
+        val resetButton: Button = view.findViewById(R.id.button_reset)
         var adapter = ArrayAdapter(mainActivity.applicationContext, android.R.layout.simple_spinner_item, arrayOf("No device found"))
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         deviceNameSpinner.adapter = adapter
@@ -87,6 +90,25 @@ class SettingFragment : Fragment(){
             mouse.connect(deviceName)
             mainActivity.updateMouse(mouse)
             mouse.storeData()
+        }
+
+        resetButton.setOnClickListener {
+            AlertDialog.Builder(view.context).apply {
+                setTitle("Reset")
+                setMessage("Are you sure to delete all setting?\n(You will need to do pairing again.)")
+                setPositiveButton("Yes", DialogInterface.OnClickListener { _, _ ->
+                    mouse.deleteData()
+                    mouse.stop()
+                    adapter = ArrayAdapter(mainActivity.applicationContext, android.R.layout.simple_spinner_item, mouse.getDevicesName())
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    deviceNameSpinner.adapter = adapter
+                    peripheralSwitch.isChecked = false
+                    mouse.setPeripheralProvider()
+                    mainActivity.updateMouse(mouse)
+                })
+                setNegativeButton("Cancel", null)
+                show()
+            }
         }
     }
 

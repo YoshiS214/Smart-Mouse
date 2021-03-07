@@ -16,13 +16,15 @@ import kotlinx.android.synthetic.main.fragment_cross.*
 
 class CrossFragment: Fragment(){
     lateinit var mouse: Mouse
+    lateinit var mainActivity: MainActivity
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        mouse = (activity as MainActivity).getMouse()
+        mainActivity = activity as MainActivity
+        mouse = mainActivity.getMouse()
         return inflater.inflate(R.layout.fragment_cross, container, false)
 
     }
@@ -35,41 +37,29 @@ class CrossFragment: Fragment(){
         val rightButton: ImageView = view.findViewById(R.id.button_rightArrow)
         val leftClick: ImageView = view.findViewById(R.id.button_leftClick)
         val rightClick: ImageView = view.findViewById(R.id.button_rightClick)
-        val nameText: TextView = view.findViewById(R.id.text_ConnectedDevice)
-
-        var names: Array<String> = mouse.connectedDeviceName()
-
-        if (names.isEmpty()){
-            nameText.text = "No device is connected"
-        }else{
-            for (x in names){
-                nameText.text = nameText.text.toString() + x + ", "
-            }
-            nameText.text = nameText.text.toString() + "are connected"
-        }
 
         upButton.setOnClickListener{
-            mouse.changeState(0,- 20,0, left = false, right = false, middle = false)
+            mouse.changeState(0,- 20,0, left = false, right = false, middle = false, mainActivity.getDevice())
         }
 
         downButton.setOnClickListener {
-            mouse.changeState(0,20,0, left = false, right = false, middle = false)
+            mouse.changeState(0,20,0, left = false, right = false, middle = false, mainActivity.getDevice())
         }
 
         leftButton.setOnClickListener {
-            mouse.changeState(-20,0,0, left = false, right = false, middle = false)
+            mouse.changeState(-20,0,0, left = false, right = false, middle = false, mainActivity.getDevice())
         }
 
         rightButton.setOnClickListener {
-            mouse.changeState(20,0,0, left = false, right = false, middle = false)
+            mouse.changeState(20,0,0, left = false, right = false, middle = false, mainActivity.getDevice())
         }
 
         leftClick.setOnClickListener {
-            mouse.changeState(0,0,0, left = true, right = false, middle = false)
+            mouse.changeState(0,0,0, left = true, right = false, middle = false, mainActivity.getDevice())
         }
 
         rightClick.setOnClickListener {
-            mouse.changeState(0,0,0, left = false, right = true, middle = false)
+            mouse.changeState(0,0,0, left = false, right = true, middle = false, mainActivity.getDevice())
         }
     }
 }

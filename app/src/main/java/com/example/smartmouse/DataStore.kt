@@ -4,25 +4,27 @@ import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import com.example.smartmouse.bluetooth.bDevice
 import com.google.gson.Gson
 import java.lang.Exception
 
 class DataStore {
 
     companion object{
-        fun getBleDevices(context: Context): Array<BluetoothDevice>{
+        fun getBleDevices(context: Context): Array<bDevice>{
             var data: SharedPreferences = context.getSharedPreferences("ble", Context.MODE_PRIVATE)
             var gson: Gson = Gson()
 
-            var devices = try {
+            /*
+            if (devices.isNotEmpty()){
+                Log.d("data", "読み込まれたよ")
+            }
+             */
+            return try {
                 gson.fromJson(data.getString("devices", ""), Array<BluetoothDevice>::class.java)
             }catch (e: Exception){
-                arrayOf()
+                arrayOf<bDevice>()
             }
-            if (devices.isNotEmpty()){
-                Log.d("data", "読み込まれよ")
-            }
-            return devices
         }
 
         fun writeBleDevices(context: Context, devices: Array<BluetoothDevice>){

@@ -3,8 +3,13 @@ package com.example.smartmouse
 import android.app.PendingIntent.getActivity
 import android.content.Context
 import android.os.Bundle
+import android.os.Handler
 import android.view.Menu
+import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
@@ -14,17 +19,49 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.smartmouse.bluetooth.Mouse
+import com.example.smartmouse.bluetooth.bDevice
 import com.google.android.material.navigation.NavigationView
 
 class MainActivity : AppCompatActivity(){
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var mouse: Mouse
+    private lateinit var selectedDevice: bDevice
+    private lateinit var sensor: Sensor
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val toolbar: Toolbar = findViewById(R.id.toolbar)
+        val deviceSpinner: Spinner = findViewById(R.id.spinner_selectDevice)
+        var adapter = ArrayAdapter(applicationContext, android.R.layout.simple_spinner_item, arrayOf("No device found"))
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        deviceSpinner.adapter = adapter
+        val handler: Handler = Handler()
+        var runnable: Runnable = Runnable {  }
+        runnable = Runnable {
+            var devices = mouse.connectedDevice()
+            var names = devices.map { x -> x.name }
+            adapter = ArrayAdapter(applicationContext, android.R.layout.simple_spinner_item, names)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            deviceSpinner.adapter = adapter
+            handler.postDelayed(runnable, 10000)
+        }
+
+        handler.post(runnable)
+
+        deviceSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+            override fun onItemSelected(parent: AdapterView<*>?,
+                                        view: View?, position: Int, id: Long) {
+                val spinnerParent = parent as Spinner
+                val item = spinnerParent.selectedItem as String
+                selectedDevice = mouse.connectedDevice().find { x -> x.name == item }!!
+
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+
+            }
+        }
         setSupportActionBar(toolbar)
 
         val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
@@ -35,6 +72,8 @@ class MainActivity : AppCompatActivity(){
 
         mouse = Mouse(this)
         mouse.setPeripheralProvider()
+
+        sensor = Sensor()
 
         appBarConfiguration = AppBarConfiguration(
             setOf(
@@ -71,6 +110,14 @@ class MainActivity : AppCompatActivity(){
 
     fun updateMouse(mouse: Mouse){
         this.mouse = mouse
+    }
+
+    fun getDevice(): bDevice{
+        return selectedDevice
+    }
+
+    fun getSensor():Sensor{
+        return sensor
     }
 
     override fun onStop() {
