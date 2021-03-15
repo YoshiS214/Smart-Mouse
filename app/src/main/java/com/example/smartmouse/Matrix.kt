@@ -6,31 +6,31 @@ import kotlin.properties.Delegates
 // From DataSamplingApp
 
 class Matrix {
-    lateinit var matrix: FloatArray
-    var Row by Delegates.notNull<Int>()
-    var Column by Delegates.notNull<Int>()
-    var Size by Delegates.notNull<Int>()
+    var matrix: FloatArray
+    var row by Delegates.notNull<Int>()
+    var column by Delegates.notNull<Int>()
+    var size by Delegates.notNull<Int>()
 
     constructor(r: Int, c: Int, array: FloatArray? = null) {
-        Row = r
-        Column = c
-        Size = Row*Column
+        row = r
+        column = c
+        size = row*column
         if (array != null){
-            if(array.size == Size){
+            if(array.size == size){
                 matrix = array
             }else{
-                matrix = FloatArray(Size)
+                matrix = FloatArray(size)
                 matrix.fill(0F)
             }
         }else{
-            matrix = FloatArray(Size)
+            matrix = FloatArray(size)
             matrix.fill(0F)
         }
     }
 
     fun copy(matrix: Matrix){
-        if (Row == matrix.Row && Column == matrix.Column){
-            for (x in 0 until Size){
+        if (row == matrix.row && column == matrix.column){
+            for (x in 0 until size){
                 this.matrix[x] = matrix.matrix[x]
             }
         }
@@ -46,69 +46,69 @@ class Matrix {
 
     companion object {
         fun scaled(matrix: Matrix, scalar: Float): Matrix {
-            var result = FloatArray(matrix.Size)
+            var result = FloatArray(matrix.size)
 
-            for (x in 0 until matrix.Size) {
+            for (x in 0 until matrix.size) {
                 result[x] = scalar * matrix.matrix[x];
             }
 
-            return Matrix(matrix.Row, matrix.Column, result)
+            return Matrix(matrix.row, matrix.column, result)
         }
 
         fun addSubed(op1: Matrix, op2: Matrix, ope: Char): Matrix {
-            var result = FloatArray(op1.Size)
+            var result = FloatArray(op1.size)
 
-            if (op1.Row == op2.Row && op2.Column == op2.Column) {
+            if (op1.row == op2.row && op2.column == op2.column) {
                 if (ope == '+') {
-                    for (x in 0 until op1.Size) {
+                    for (x in 0 until op1.size) {
                         result[x] = op1.matrix[x] + op2.matrix[x]
                     }
                 } else if (ope == '-') {
-                    for (x in 0 until op1.Size) {
+                    for (x in 0 until op1.size) {
                         result[x] = op1.matrix[x] - op2.matrix[x]
                     }
                 }
             }
 
-            return Matrix(op1.Row, op1.Column, result)
+            return Matrix(op1.row, op1.column, result)
         }
 
         fun multipled(op1: Matrix, op2: Matrix): Matrix {
-            var result = FloatArray(op1.Row * op2.Column)
+            var result = FloatArray(op1.row * op2.column)
 
-            if (op1.Column == op2.Row) {
-                for (x in 0 until op1.Row) {
-                    for (y in 0 until op2.Column) {
-                        for (z in 0 until op1.Column) {
-                            result[op2.Column * x + y] += op1.matrix[z + op1.Row * x] * op2.matrix[z * op2.Column + y]
+            if (op1.column == op2.row) {
+                for (x in 0 until op1.row) {
+                    for (y in 0 until op2.column) {
+                        for (z in 0 until op1.column) {
+                            result[op2.column * x + y] += op1.matrix[z + op1.row * x] * op2.matrix[z * op2.column + y]
                         }
                     }
                 }
             }
 
-            return Matrix(op1.Row, op2.Column, result)
+            return Matrix(op1.row, op2.column, result)
         }
 
-        fun transpose(matrix: Matrix): Matrix {
-            var result = FloatArray(matrix.Size)
+        private fun transpose(matrix: Matrix): Matrix {
+            var result = FloatArray(matrix.size)
 
-            for (x in 0 until matrix.Row) {
-                for (y in 0 until matrix.Column) {
-                    result[x * matrix.Column + y] = matrix.matrix[x + y * matrix.Column]
+            for (x in 0 until matrix.row) {
+                for (y in 0 until matrix.column) {
+                    result[x * matrix.column + y] = matrix.matrix[x + y * matrix.column]
                 }
             }
 
-            return Matrix(matrix.Row, matrix.Column, result)
+            return Matrix(matrix.row, matrix.column, result)
         }
 
         fun determinant(matrix: Matrix): Float? {
-            return if (matrix.Row != matrix.Column){
+            return if (matrix.row != matrix.column){
                 null
-            } else if (matrix.Size == 1) {
+            } else if (matrix.size == 1) {
                 matrix.matrix[0]
             } else {
                 var det: Float = 0f
-                for (x in 0 until matrix.Column) {
+                for (x in 0 until matrix.column) {
                     det += (-1f).pow(x) * matrix.matrix[x] * determinant(filter(matrix, 1, x + 1))!!
                 }
                 det
@@ -116,49 +116,49 @@ class Matrix {
         }
 
         private fun filter(matrix: Matrix, r: Int, c: Int): Matrix {
-            var map = FloatArray((matrix.Row - 1) * (matrix.Column - 1))
+            var map = FloatArray((matrix.row - 1) * (matrix.column - 1))
             var index = 0
 
 
-            for (x in 0 until matrix.Size) {
-                if ((x - c + 1) % matrix.Column != 0 && (x < matrix.Column * (r - 1) || x > matrix.Column * r - 1)) {
+            for (x in 0 until matrix.size) {
+                if ((x - c + 1) % matrix.column != 0 && (x < matrix.column * (r - 1) || x > matrix.column * r - 1)) {
                     map[index] = matrix.matrix[x]
                     index += 1
                 }
             }
 
-            return Matrix(matrix.Row - 1, matrix.Column - 1, map)
+            return Matrix(matrix.row - 1, matrix.column - 1, map)
         }
 
-        fun cofactor(matrix: Matrix): Matrix {
-            var result = FloatArray(matrix.Size)
+        private fun cofactor(matrix: Matrix): Matrix {
+            var result = FloatArray(matrix.size)
             var sign = 1
-            for (x in 0 until matrix.Row) {
-                for (y in 0 until matrix.Column) {
-                    result[x * matrix.Column + y] = sign * (-1).toDouble().pow(y.toDouble())
-                        .toFloat() * matrix.matrix[x * matrix.Column + y]
+            for (x in 0 until matrix.row) {
+                for (y in 0 until matrix.column) {
+                    result[x * matrix.column + y] = sign * (-1).toDouble().pow(y.toDouble())
+                        .toFloat() * matrix.matrix[x * matrix.column + y]
                 }
                 sign *= -1
             }
 
-            return Matrix(matrix.Row, matrix.Column, result)
+            return Matrix(matrix.row, matrix.column, result)
         }
 
         fun inverse(matrix: Matrix): Matrix? {
-            var result = FloatArray(matrix.Size)
+            var result = FloatArray(matrix.size)
 
-            return if (matrix.Row != matrix.Column || determinant(matrix) == 0f){
+            return if (matrix.row != matrix.column || determinant(matrix) == 0f){
                 null
             }else{
-                for (r in 0 until matrix.Row) {
-                    for (c in 0 until matrix.Column) {
+                for (r in 0 until matrix.row) {
+                    for (c in 0 until matrix.column) {
 
-                        result[r * matrix.Row + c] = determinant(filter(matrix, r + 1, c + 1))!!
+                        result[r * matrix.row + c] = determinant(filter(matrix, r + 1, c + 1))!!
                     }
                 }
 
                 scaled(
-                    transpose(cofactor(Matrix(matrix.Row, matrix.Column, result))),
+                    transpose(cofactor(Matrix(matrix.row, matrix.column, result))),
                     1 / determinant(matrix)!!
                 )
             }

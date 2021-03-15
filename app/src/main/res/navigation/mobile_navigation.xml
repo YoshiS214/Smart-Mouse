@@ -7,9 +7,9 @@
 
     <fragment
         android:id="@+id/nav_mouse"
-        android:name="com.example.smartmouse.ui.home.HomeFragment"
+        android:name="com.example.smartmouse.ui.mouse.Mouse3dFragment"
         android:label="@string/menu_mouse"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_3dmouse" />
 
     <fragment
         android:id="@+id/nav_cross"
@@ -19,15 +19,15 @@
 
     <fragment
         android:id="@+id/nav_keyboard"
-        android:name="com.example.smartmouse.ui.gallery.GalleryFragment"
+        android:name="com.example.smartmouse.ui.keyboard.KeyboardFragment"
         android:label="@string/menu_keyboard"
-        tools:layout="@layout/fragment_gallery" />
+        tools:layout="@layout/fragment_keyboard" />
 
     <fragment
         android:id="@+id/nav_touchpad"
-        android:name="com.example.smartmouse.ui.slideshow.SlideshowFragment"
+        android:name="com.example.smartmouse.ui.touchpad.TouchpadFragment"
         android:label="@string/menu_touchpad"
-        tools:layout="@layout/fragment_slideshow" />
+        tools:layout="@layout/fragment_touchpad" />
 
     <fragment
         android:id="@+id/nav_setting"

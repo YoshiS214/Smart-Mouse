@@ -16,6 +16,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.smartmouse.DataStore
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
+import kotlin.collections.HashMap
+import kotlin.collections.HashSet
 import kotlin.properties.Delegates
 
 typealias gattService = BluetoothGattService
@@ -127,13 +129,14 @@ abstract class BLE{
 
     }
 
+    private val uuidFirst4: String = "0000"
     private val uuidLast24: String = "-0000-1000-8000-00805F9B34FB"
 
     private val deviceName: String = android.os.Build.DEVICE.plus("-SmartMouse")
     private val manufactureName: String = android.os.Build.MANUFACTURER
     private val serialNumber: String = android.os.Build.ID
     private var batteryPercentage: Int = 0
-    private val maxInfoLength: Int = 20
+    //private val maxInfoLength: Int = 20
 
     private val deviceInfoService: UUID = getUUID(0x180A)
     private val manufactureNameChar: UUID = getUUID(0x2A29)
@@ -154,111 +157,6 @@ abstract class BLE{
     private val clientCharConfigDescriptor: UUID = getUUID(0x2902)
 
     private val hidInfoResponse: ByteArray = byteArrayOf(0x11, 0x01, 0x00, 0x03)
-    private val MouseKeyboardMap: ByteArray = byteArrayOf(
-        0x05, 0x01,                         // USAGE_PAGE (Generic Desktop)
-        0x09, 0x02,                         // USAGE (Mouse)
-        0xa1.toByte(), 0x01,                         // COLLECTION (Application)
-        0x05, 0x01,                         // USAGE_PAGE (Generic Desktop)
-        0x09, 0x02,                         // USAGE (Mouse)
-        0xa1.toByte(), 0x02,                         //       COLLECTION (Logical)
-        0x85.toByte(), 0x04,                         //   REPORT_ID (Mouse)
-        0x09, 0x01,                         //   USAGE (Pointer)
-        0xa1.toByte(), 0x00,                         //   COLLECTION (Physical)
-        0x05, 0x09,                         //     USAGE_PAGE (Button)
-        0x19, 0x01,                         //     USAGE_MINIMUM (Button 1)
-        0x29, 0x02,                         //     USAGE_MAXIMUM (Button 2)
-        0x15, 0x00,                         //     LOGICAL_MINIMUM (0)
-        0x25, 0x01,                         //     LOGICAL_MAXIMUM (1)
-        0x75, 0x01,                         //     REPORT_SIZE (1)
-        0x95.toByte(), 0x02,                         //     REPORT_COUNT (2)
-        0x81.toByte(), 0x02,                         //     INPUT (Data,Var,Abs)
-        0x95.toByte(), 0x01,                         //     REPORT_COUNT (1)
-        0x75, 0x06,                         //     REPORT_SIZE (6)
-        0x81.toByte(), 0x03,                         //     INPUT (Cnst,Var,Abs)
-        0x05, 0x01,                         //     USAGE_PAGE (Generic Desktop)
-        0x09, 0x30,                         //     USAGE (X)
-        0x09, 0x31,                         //     USAGE (Y)
-        0x16, 0x01, 0xf8.toByte(),                   //     LOGICAL_MINIMUM (-2047)
-        0x26, 0xff.toByte(), 0x07,                   //     LOGICAL_MAXIMUM (2047)
-        0x75, 0x10,                         //     REPORT_SIZE (16)
-        0x95.toByte(), 0x02,                         //     REPORT_COUNT (2)
-        0x81.toByte(), 0x06,                         //     INPUT (Data,Var,Rel)
-        0xa1.toByte(), 0x02,                         //       COLLECTION (Logical)
-        0x85.toByte(), 0x06,                         //   REPORT_ID (Feature)
-        0x09, 0x48,                         //         USAGE (Resolution Multiplier)
-        0x15, 0x00,                         //         LOGICAL_MINIMUM (0)
-        0x25, 0x01,                         //         LOGICAL_MAXIMUM (1)
-        0x35, 0x01,                         //         PHYSICAL_MINIMUM (1)
-        0x45, 0x04,                         //         PHYSICAL_MAXIMUM (4)
-        0x75, 0x02,                         //         REPORT_SIZE (2)
-        0x95.toByte(), 0x01,                         //         REPORT_COUNT (1)
-        0xb1.toByte(), 0x02,                         //         FEATURE (Data,Var,Abs)
-        0x85.toByte(), 0x04,                         //   REPORT_ID (Mouse)
-        //0x05, 0x01,                       //     USAGE_PAGE (Generic Desktop)
-        0x09, 0x38,                         //         USAGE (Wheel)
-        0x15, 0x81.toByte(),                         //         LOGICAL_MINIMUM (-127)
-        0x25, 0x7f,                         //         LOGICAL_MAXIMUM (127)
-        0x35, 0x00,                         //         PHYSICAL_MINIMUM (0)        - reset physical
-        0x45, 0x00,                         //         PHYSICAL_MAXIMUM (0)
-        0x75, 0x08,                         //         REPORT_SIZE (8)
-        0x95.toByte(), 0x01,                         //     REPORT_COUNT (1)
-        0x81.toByte(), 0x06,                         //     INPUT (Data,Var,Rel)
-        0xc0.toByte(),                               //       END_COLLECTION
-
-        0xa1.toByte(), 0x02,                         //       COLLECTION (Logical)
-        0x85.toByte(), 0x06,                         //   REPORT_ID (Feature)
-        0x09, 0x48,                         //         USAGE (Resolution Multiplier)
-        0x15, 0x00,                         //         LOGICAL_MINIMUM (0)
-        0x25, 0x01,                         //         LOGICAL_MAXIMUM (1)
-        0x35, 0x01,                         //         PHYSICAL_MINIMUM (1)
-        0x45, 0x04,                         //         PHYSICAL_MAXIMUM (4)
-        0x75, 0x02,                         //         REPORT_SIZE (2)
-        0x95.toByte(), 0x01,                         //         REPORT_COUNT (1)
-        0xb1.toByte(), 0x02,                         //         FEATURE (Data,Var,Abs)
-        0x35, 0x00,                         //         PHYSICAL_MINIMUM (0)        - reset physical
-        0x45, 0x00,                         //         PHYSICAL_MAXIMUM (0)
-        0x75, 0x04,                         //         REPORT_SIZE (4)
-        0xb1.toByte(), 0x03,                         //         FEATURE (Cnst,Var,Abs)
-        0x85.toByte(), 0x04,                         //   REPORT_ID (Mouse)
-        0x05, 0x0c,                         //         USAGE_PAGE (Consumer Devices)
-        0x0a, 0x38, 0x02,                   //         USAGE (AC Pan)
-        0x15, 0x81.toByte(),                         //         LOGICAL_MINIMUM (-127)
-        0x25, 0x7f,                         //         LOGICAL_MAXIMUM (127)
-        0x75, 0x08,                         //         REPORT_SIZE (8)
-        0x95.toByte(), 0x01,                         //         REPORT_COUNT (1)
-        0x81.toByte(), 0x06,                         //         INPUT (Data,Var,Rel)
-        0xc0.toByte(),                               //       END_COLLECTION
-        0xc0.toByte(),                               //       END_COLLECTION
-
-        0xc0.toByte(),                               //   END_COLLECTION
-        0xc0.toByte(),                               //END_COLLECTION
-
-        0x05, 0x01,                         // USAGE_PAGE (Generic Desktop)
-        0x09, 0x06,                         // Usage (Keyboard)
-        0xA1.toByte(), 0x01,                         // Collection (Application)
-        0x85.toByte(), 0x08,                         //   REPORT_ID (Keyboard)
-        0x05, 0x07,                         //     Usage Page (Key Codes)
-        0x19, 0xe0.toByte(),                         //     Usage Minimum (224)
-        0x29, 0xe7.toByte(),                         //     Usage Maximum (231)
-        0x15, 0x00,                         //     Logical Minimum (0)
-        0x25, 0x01,                         //     Logical Maximum (1)
-        0x75, 0x01,                         //     Report Size (1)
-        0x95.toByte(), 0x08,                         //     Report Count (8)
-        0x81.toByte(), 0x02,                         //     Input (Data, Variable, Absolute)
-        0x95.toByte(), 0x01,                         //     Report Count (1)
-        0x75, 0x08,                         //     Report Size (8)
-        0x81.toByte(), 0x01,                         //     Input (Constant) reserved byte(1)
-        0x95.toByte(), 0x01,                         //     Report Count (1)
-        0x75, 0x08,                         //     Report Size (8)
-        0x15, 0x00,                         //     Logical Minimum (0)
-        0x25, 0x65,                         //     Logical Maximum (101)
-        0x05, 0x07,                         //     Usage Page (Key codes)
-        0x19, 0x00,                         //     Usage Minimum (0)
-        0x29, 0x65,                         //     Usage Maximum (101)
-        0x81.toByte(), 0x00,                         //     Input (Data, Array) Key array(6 bytes)
-        0xc0.toByte()                                // End Collection (Application)
-
-    )
 
     private var intentFilter : IntentFilter = IntentFilter()
 
@@ -266,10 +164,15 @@ abstract class BLE{
 
     abstract fun getOutputReport(output: ByteArray)
 
+    private val inputReport: Queue<Report> = ConcurrentLinkedQueue()
+    fun addInputReports(input: Report){
+        if (input != null && input.getReport().isNotEmpty()){
+            inputReport.add(input)
+        }
+    }
+
     var bleEnabled: Boolean = true
-    var hidDevice: BluetoothHidDevice? = null
-    var connectedHosts: Array<bDevice> = arrayOf()
-    var hostDevices: Array<bDevice> = arrayOf()
+    var bleDeviceMap: MutableMap<String, bDevice> = HashMap()
 
     lateinit var appContext: Context
     lateinit var handler: Handler
@@ -283,83 +186,10 @@ abstract class BLE{
     lateinit var adData: AdvertiseData
     lateinit var scanResult: AdvertiseData
     lateinit var callback: AdvertiseCallback
+    lateinit var task: TimerTask
     var sendingRate by Delegates.notNull<Long>()
 
-    private val serverListener: BluetoothProfile.ServiceListener = object: BluetoothProfile.ServiceListener{
-        @RequiresApi(Build.VERSION_CODES.P)
-        override fun onServiceConnected(profile: Int, proxy: BluetoothProfile?) {
-            if (profile == BluetoothProfile.HID_DEVICE){
-                if (proxy != null) {
-                    hidDevice = proxy as BluetoothHidDevice?
-                    hidDevice?.registerApp(sdpSettings, null, qosSettings, {it.run()}, hidCallback)
-                }
-            }
-        }
-
-        override fun onServiceDisconnected(profile: Int) {
-            if (profile == BluetoothProfile.HID_DEVICE){
-                hidDevice = null
-            }
-        }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.P)
-    private val sdpSettings: BluetoothHidDeviceAppSdpSettings = BluetoothHidDeviceAppSdpSettings(
-        deviceName,
-        "Smart Mouse",
-        manufactureName,
-        BluetoothHidDevice.SUBCLASS1_COMBO,
-        MouseKeyboardMap
-    )
-
-    @RequiresApi(Build.VERSION_CODES.P)
-    private val qosSettings: BluetoothHidDeviceAppQosSettings = BluetoothHidDeviceAppQosSettings(
-        BluetoothHidDeviceAppQosSettings.SERVICE_BEST_EFFORT,
-        800,
-        9,
-        0,
-        11250,
-        BluetoothHidDeviceAppQosSettings.MAX
-    )
-
-    @RequiresApi(Build.VERSION_CODES.P)
-    private val hidCallback: BluetoothHidDevice.Callback = object: BluetoothHidDevice.Callback(){
-        override fun onConnectionStateChanged(device: BluetoothDevice?, state: Int) {
-            super.onConnectionStateChanged(device, state)
-            when(state){
-                BluetoothProfile.STATE_CONNECTED ->{
-                    if (device != null){
-                        connectedHosts.plus(device)
-                    }
-                }
-                BluetoothProfile.STATE_DISCONNECTED ->{
-                    if (device != null){
-                        connectedHosts = connectedHosts.filterNot { x -> x == device }.toTypedArray()
-                    }
-                }
-            }
-        }
-
-        override fun onAppStatusChanged(pluggedDevice: BluetoothDevice?, registered: Boolean) {
-            super.onAppStatusChanged(pluggedDevice, registered)
-            if (hidDevice?.getConnectionState(pluggedDevice) == BluetoothProfile.STATE_DISCONNECTED && pluggedDevice!= null){
-                hidDevice?.connect(pluggedDevice)
-                hostDevices.plus(pluggedDevice)
-            }else{
-                hidDevice?.connect(hidDevice?.getDevicesMatchingConnectionStates(intArrayOf(BluetoothProfile.STATE_CONNECTING,BluetoothProfile.STATE_CONNECTED,BluetoothProfile.STATE_DISCONNECTED,BluetoothProfile.STATE_DISCONNECTING))
-                    ?.get(0))
-            }
-        }
-
-        override fun onGetReport(device: BluetoothDevice?, type: Byte, id: Byte, bufferSize: Int) {
-            super.onGetReport(device, type, id, bufferSize)
-        }
-
-        override fun onSetReport(device: BluetoothDevice?, type: Byte, id: Byte, data: ByteArray?) {
-            super.onSetReport(device, type, id, data)
-        }
-    }
-
+    
     private var gattCallback: BluetoothGattServerCallback = object : BluetoothGattServerCallback(){
         override fun onConnectionStateChange(
             device: bDevice?,
@@ -382,6 +212,7 @@ abstract class BLE{
                                                         bDevice.ERROR
                                                     )) {
                                                         bDevice.BOND_BONDED -> {
+                                                            intent.getParcelableExtra<bDevice>(bDevice.EXTRA_DEVICE)
                                                             context?.unregisterReceiver(this)
                                                             handler.post {
                                                                 if (gattServer != null) {
@@ -414,51 +245,13 @@ abstract class BLE{
                                         gattServer.connect(device, true)
                                     }
                                 }
-                                if (!hostDevices.contains(device)) {
-                                    hostDevices = hostDevices.plus(device)
-                                    Log.d("DEVICE", "追加したよ")
-                                }
-                                if (!connectedHosts.contains(device)) {
-                                    connectedHosts = connectedHosts.plus(device)
+                                synchronized(bleDeviceMap){
+                                    bleDeviceMap.put(device.address,device)
                                 }
                             }
                         }
                     }
                 }
-                /*
-                BluetoothProfile.STATE_CONNECTING ->{
-                    if (device != null){
-                        handler.post {
-                            if (gattServer != null){
-                                gattServer.connect(device, true)
-                                Log.d("DEVICE", "追加してるよ")
-                            }
-                        }
-                        if (!bleDevices.contains(device)){
-                            //bleDevices = bleDevices.filterNot { x -> x==device }.toTypedArray()
-                        }
-                        if (!connectedDevices.contains(device)){
-                            connectedDevices = connectedDevices.plus(device)
-                        }
-                    }
-                }
-
-                BluetoothProfile.STATE_DISCONNECTING ->{
-                    if (device != null){
-                        handler.post {
-                            if (gattServer != null){
-                                gattServer.connect(device, true)
-                            }
-                        }
-                        if (!bleDevices.contains(device)){
-                            //bleDevices = bleDevices.filterNot { x -> x==device }.toTypedArray()
-                        }
-                        if (connectedDevices.contains(device)){
-                            connectedDevices = connectedDevices.filterNot { x -> x==device }.toTypedArray()
-                        }
-                    }
-                }
-                */
                 BluetoothProfile.STATE_DISCONNECTED -> {
                     if (device != null) {
                         handler.post {
@@ -466,12 +259,8 @@ abstract class BLE{
                                 gattServer.connect(device, true)
                             }
                         }
-                        if (!hostDevices.contains(device)) {
-                            //bleDevices = bleDevices.filterNot { x -> x==device }.toTypedArray()
-                        }
-                        if (connectedHosts.contains(device)) {
-                            connectedHosts =
-                                connectedHosts.filterNot { x -> x == device }.toTypedArray()
+                        synchronized(bleDeviceMap){
+                            bleDeviceMap.remove(device.address)
                         }
                     }
                 }
@@ -649,26 +438,17 @@ abstract class BLE{
         }
     }
 
-    // Reports
-    private var hidInputs: Queue<Report> = ConcurrentLinkedQueue()
-
-    private class Report(device: bDevice, report: ByteArray){
+    class Report(device: bDevice, report: ByteArray){
         private val device: bDevice = device
         private val report: ByteArray = report
         fun getDevice(): bDevice {return device}
         fun getReport(): ByteArray {return report}
     }
 
-    interface Listener{
-        fun Connected(device: bDevice)
-        fun Disconnected(device: bDevice)
-    }
 
     fun initialise(context: Context, reports: BooleanArray, rate: Long):String? {
         appContext = context.applicationContext
-        thread = HandlerThread("BLE")
-        thread.start()
-        handler = Handler(thread.looper)
+        handler = Handler(appContext.mainLooper)
         sendingRate = rate
 
         val bluetoothManager: BluetoothManager = appContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -682,27 +462,61 @@ abstract class BLE{
         }else if (!adapter.isMultipleAdvertisementSupported) {
             return "BLE advertising is not supported"
         }
-        adapter.getProfileProxy(appContext, serverListener, BluetoothProfile.HID_DEVICE)
+
         advertiser = adapter.bluetoothLeAdvertiser
         if (adapter == null){
             return "BLE advertising is not supported"
         }
 
-        callback = object : AdvertiseCallback() {
-            /*
-            override fun onStartSuccess(settingsInEffect: AdvertiseSettings) {
-                super.onStartSuccess(settingsInEffect)
-            }
+        callback = object : AdvertiseCallback() {}
 
-            override fun onStartFailure(errorCode: Int) {
-                Log.e("BLE", "Advertising onStartFailure: $errorCode")
-                super.onStartFailure(errorCode)
+        for ( device in DataStore.getBleDevices(appContext)){
+            synchronized(bleDeviceMap){
+                bleDeviceMap.put(device.address, device)
             }
-             */
         }
 
-        hostDevices = DataStore.getBleDevices(appContext)
-        connectedHosts = arrayOf()
+        synchronized(bleDeviceMap){
+            bleDeviceMap.putAll(DataStore.getBleDevices(appContext).map { x -> x.address }.zip(DataStore.getBleDevices(appContext)))
+        }
+
+        gattServer = bluetoothManager.openGattServer(appContext, gattCallback)
+
+        addService(getHIDService(reports))
+        addService(getDeviceInfoService())
+        addService(getBatteryService())
+
+        task = object: TimerTask(){
+            override fun run() {
+                if (inputReport.size != 0){
+                    val input: Report = inputReport.poll()
+                    if (input != null && inputReportChar != null){
+                        inputReportChar.value = input.getReport()
+                        var device = input.getDevice()
+                        handler.post {
+                            if (gattServer != null){
+                                try{
+                                    gattServer.notifyCharacteristicChanged(
+                                        device,
+                                        inputReportChar,
+                                        false
+                                    )
+                                }catch (e: Exception){
+                                    Log.d("Report", e.toString())
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        timer = Timer()
+        timer.scheduleAtFixedRate(
+            task,
+            0,
+            sendingRate
+        )
 
         return null
     }
@@ -781,11 +595,6 @@ abstract class BLE{
                     gattChar.PROPERTY_READ or gattChar.PROPERTY_WRITE or characteristics[x],
                     gattChar.PERMISSION_WRITE_ENCRYPTED or gattChar.PERMISSION_READ_ENCRYPTED
                 )
-                descriptor = gattDesc(
-                    reportReferenceDescriptor,
-                    gattDesc.PERMISSION_READ_ENCRYPTED or gattDesc.PERMISSION_WRITE_ENCRYPTED
-                )
-                characteristic.addDescriptor(descriptor)
                 if (x == 0){
                     descriptor = gattDesc(
                         clientCharConfigDescriptor,
@@ -793,9 +602,18 @@ abstract class BLE{
                     )
                     descriptor.value = gattDesc.ENABLE_NOTIFICATION_VALUE
                     characteristic.addDescriptor(descriptor)
+                }else if (x == 1){
+                    characteristic.writeType = gattChar.WRITE_TYPE_NO_RESPONSE
+                }
+                descriptor = gattDesc(
+                    reportReferenceDescriptor,
+                    gattDesc.PERMISSION_READ_ENCRYPTED or gattDesc.PERMISSION_WRITE_ENCRYPTED
+                )
+                characteristic.addDescriptor(descriptor)
+                while (!service.addCharacteristic(characteristic)){}
+                if (x == 0){
                     inputReportChar = characteristic
                 }
-                while (!service.addCharacteristic(characteristic)){}
             }
         }
 
@@ -850,63 +668,16 @@ abstract class BLE{
     }
 
     fun start(){
-        gattServer = (appContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).openGattServer(appContext, gattCallback)
-
-        thread = HandlerThread("BLE")
-        thread.start()
-        handler = Handler(thread.looper)
-
-        Thread {
-            addService(getHIDService(booleanArrayOf(true, true, true)))
-            addService(getDeviceInfoService())
-            addService(getBatteryService())
-        }.start()
-
-        var task: TimerTask = object: TimerTask(){
-            @RequiresApi(Build.VERSION_CODES.P)
-            override fun run() {
-                if (hidInputs.size != 0){
-                    val input: Report = hidInputs.poll()
-                    if (input != null && inputReportChar != null){
-                        inputReportChar.value = input.getReport()
-                        var device = input.getDevice()
-                        handler.post {
-                            if (gattServer != null){
-                                try{
-                                    gattServer.notifyCharacteristicChanged(
-                                        device,
-                                        inputReportChar,
-                                        false
-                                    )
-                                }catch (e: Exception){
-                                    Log.d("Report", e.toString())
-                                }
-                            }
-                            hidDevice?.sendReport(device,4,input.getReport())
-
-                        }
-                    }
-                }
-            }
-        }
-
-        timer = Timer()
-        timer.scheduleAtFixedRate(
-            task,
-            0,
-            sendingRate
-        )
-
         handler.post {
             adSettings = AdvertiseSettings.Builder()
                 .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY)
-                .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM)
+                .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_HIGH)
                 .setConnectable(true)
                 .setTimeout(0)
                 .build()
             adData = AdvertiseData.Builder()
                 .setIncludeDeviceName(true)
-                .setIncludeTxPowerLevel(false)
+                .setIncludeTxPowerLevel(true)
                 .addServiceUuid(ParcelUuid(deviceInfoService))
                 .addServiceUuid(ParcelUuid(hidService))
                 .addServiceUuid(ParcelUuid(batteryService))
@@ -937,6 +708,7 @@ abstract class BLE{
             }catch (e: Exception){
                 Log.d(null, e.toString())
             }
+            /*
             if (timer != null){
                 try{
                     timer.cancel()
@@ -944,29 +716,29 @@ abstract class BLE{
                     Log.d(null, e.toString())
                 }
             }
+             */
             if (gattServer != null){
                 try{
-                    for(x in hostDevices){
+                    for(x in devices){
                         gattServer.cancelConnection(x)
                     }
-                    gattServer.clearServices()
                     gattServer.close()
 
                 }catch (e: Exception){
                     Log.d(null, e.toString())
                 }
             }
-
-            thread.quit()
         }
 
     }
-
-    fun addHidInput(device: bDevice, report: ByteArray){
-        if (hidInputs != null){
-            hidInputs.offer(Report(device, report))
+    
+    private val devices: Set<bDevice>
+        private get(){
+            val temp : MutableSet<bDevice> = HashSet()
+            synchronized(bleDeviceMap){temp.addAll(bleDeviceMap.values)}
+            return Collections.unmodifiableSet(temp)
         }
-    }
+
 
     open fun isReady(): Boolean{
         var ready = true
@@ -1012,10 +784,6 @@ abstract class BLE{
                 ready = false
                 Log.d(null, "Empty callback")
             }
-            hostDevices == null -> {
-                ready = false
-                Log.d(null, "Empty bleDevices")
-            }
         }
 
         return ready
@@ -1024,7 +792,7 @@ abstract class BLE{
     open fun getDevicesName(): Array<String>{
         var names: Array<String> = arrayOf()
         try{
-            for (device: bDevice in hostDevices){
+            for (device: bDevice in devices){
                 names = names.plus(device.name)
             }
         }catch (e: Exception){
@@ -1038,7 +806,7 @@ abstract class BLE{
     open fun connect(name: String){
         var device: bDevice? = null
 
-        for (x in hostDevices){
+        for (x in devices){
             if (x.name == name){
                 device = x
             }
@@ -1068,11 +836,11 @@ abstract class BLE{
     }
 
     open fun connectedDevice():Array<bDevice>{
-        return connectedHosts
+        return devices.filter { x -> x.bondState == bDevice.BOND_BONDED }.toTypedArray()
     }
 
     open fun saveData(){
-        DataStore.writeBleDevices(appContext, hostDevices)
+        DataStore.writeBleDevices(appContext, devices.toTypedArray())
     }
 
     open fun deleteData(){
@@ -1080,7 +848,7 @@ abstract class BLE{
     }
 
     private fun getUUID(uuid_short: Int): UUID{
-        return UUID.fromString("%08X".format(uuid_short) + uuidLast24)
+        return UUID.fromString(uuidFirst4+ String.format("%04X", uuid_short and 0xffff) + uuidLast24)
     }
 
 
