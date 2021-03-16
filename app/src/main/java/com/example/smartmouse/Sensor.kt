@@ -19,7 +19,7 @@ class Sensor: SensorEventListener {
     private val magnetometerReading = FloatArray(3)
 
     private val rotationMatrix = FloatArray(9)
-    private val orientationAngles = FloatArray(3)
+    private val orientation = FloatArray(3)
 
     private var accelerations = Matrix(3,1)
     private var displacements = Matrix(3,1)
@@ -33,7 +33,6 @@ class Sensor: SensorEventListener {
     private var timeStamp: Pair<Double,Double> = Pair(0.0,0.0)
 
     private val filterCoefficient: Float = 0.9F
-    private var detected = 0
 
 
     override fun onSensorChanged(event: SensorEvent?) {
@@ -72,23 +71,37 @@ class Sensor: SensorEventListener {
     private fun calculate(){
         handler.post {
             SensorManager.getRotationMatrix(rotationMatrix,null,accelerometerReading,magnetometerReading)
-            SensorManager.getOrientation(rotationMatrix,orientationAngles)
-            orientationAngles.forEach { x -> -1*x }
-            accelerations.copy(Matrix.multipled(Matrix.inverse(Matrix(3,3,rotationMatrix))!!, Matrix(3,1,linearReading)))
+            SensorManager.getOrientation(rotationMatrix, orientation)
+            accelerations.copy(Matrix.multipled(Matrix(3,3,rotationMatrix)!!, Matrix(3,1,linearReading)))
             check.copy(Matrix.addSubed(Matrix.scaled(lowpass, filterCoefficient), Matrix.scaled(accelerations, (1-filterCoefficient)), '+'))
             lowpass.copy(Matrix(3,1, check.matrix))
             highpass.copy(Matrix.addSubed(accelerations, lowpass, '-'))
             velocity = Matrix.addSubed(Matrix.scaled(Matrix.addSubed(lowpass,highpass, '+'), 0.5F*(timeStamp.second - timeStamp.first).toFloat()), velocity, '+')
             displacements = Matrix.addSubed(Matrix.scaled(Matrix.addSubed(preVelocity,velocity, '+'), 0.5F*(timeStamp.second - timeStamp.first).toFloat()), displacements, '+')
             preVelocity = velocity
-            detected += 1
         }
     }
 
-    fun getDisplacement(): FloatArray{
+    fun getDisplacement(): Pair<FloatArray, FloatArray>{
         var temp = Matrix(3, 1)
         temp.copy(displacements)
-        displacements.zero()
-        return temp.toFloatArray()
+        handler.post{
+            displacements.zero()
+        }
+        return Pair<FloatArray,FloatArray>(temp.toFloatArray(), orientation)
+    }
+
+    fun reset(){
+        accelerations = Matrix(3,1)
+        displacements = Matrix(3,1)
+
+        check = Matrix(3,1)
+
+        lowpass = Matrix(3,1)
+        highpass = Matrix(3,1)
+        preVelocity = Matrix(3,1)
+        velocity = Matrix(3,1)
+        timeStamp= Pair(0.0,0.0)
+
     }
 }
