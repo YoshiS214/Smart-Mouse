@@ -1,11 +1,9 @@
-package com.example.smartmouse.UI.setting
+package com.example.smartmouse.ui.setting
 
 import android.app.AlertDialog
-import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
 import android.os.Handler
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -36,6 +34,7 @@ class SettingFragment : Fragment(){
         val peripheralSwitch: Switch = view.findViewById(R.id.switch_peripheral)
         val connectButton: Button = view.findViewById(R.id.button_BLEconnect)
         val deviceNameSpinner: Spinner = view.findViewById(R.id.spinner_DeviceName)
+        val mouseSeekBar: SeekBar = view.findViewById(R.id.seekbar_mouse)
         val resetButton: Button = view.findViewById(R.id.button_reset)
         var adapter = ArrayAdapter(mainActivity.applicationContext, android.R.layout.simple_spinner_item, arrayOf("No device found"))
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -91,6 +90,26 @@ class SettingFragment : Fragment(){
             mainActivity.updateMouse(mouse)
             mouse.storeData()
         }
+
+        mouseSeekBar.progress = mainActivity.getSpeed()
+
+        mouseSeekBar.setOnSeekBarChangeListener(
+            object : SeekBar.OnSeekBarChangeListener{
+                override fun onProgressChanged(
+                    seekBar: SeekBar?,
+                    progress: Int,
+                    fromUser: Boolean
+                ) {
+                    mainActivity.updateSpeed(progress)
+                }
+
+                override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                }
+
+                override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                }
+            }
+        )
 
         resetButton.setOnClickListener {
             AlertDialog.Builder(view.context).apply {

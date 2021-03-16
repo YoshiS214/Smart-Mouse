@@ -15,8 +15,8 @@ import com.example.smartmouse.bluetooth.Mouse
 import kotlinx.android.synthetic.main.fragment_cross.*
 
 class CrossFragment: Fragment(){
-    lateinit var mouse: Mouse
-    lateinit var mainActivity: MainActivity
+    private lateinit var mouse: Mouse
+    private lateinit var mainActivity: MainActivity
 
     override fun onCreateView(
         inflater: LayoutInflater,

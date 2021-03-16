@@ -15,11 +15,6 @@ class DataStore {
             var data: SharedPreferences = context.getSharedPreferences("ble", Context.MODE_PRIVATE)
             var gson: Gson = Gson()
 
-            /*
-            if (devices.isNotEmpty()){
-                Log.d("data", "読み込まれたよ")
-            }
-             */
             return try {
                 gson.fromJson(data.getString("devices", ""), Array<BluetoothDevice>::class.java)
             }catch (e: Exception){
@@ -31,7 +26,25 @@ class DataStore {
             var data: SharedPreferences = context.getSharedPreferences("ble", Context.MODE_PRIVATE)
             var gson: Gson = Gson()
             data.edit().putString("devices", gson.toJson(devices)).commit()
-            Log.d("data", "書き込んだよ")
+
+        }
+
+        fun getMouseSpeed(context: Context): Int?{
+            var data: SharedPreferences = context.getSharedPreferences("mouse", Context.MODE_PRIVATE)
+            var gson: Gson = Gson()
+
+            return try{
+                gson.fromJson(data.getString("speed", ""), Int::class.java)
+            }catch (e: Exception){
+                return null
+            }
+        }
+
+        fun writeMouseSpeed(context: Context, speed: Int){
+            var data: SharedPreferences = context.getSharedPreferences("mouse", Context.MODE_PRIVATE)
+            var gson: Gson = Gson()
+            data.edit().putString("speed", gson.toJson(speed)).commit()
+
         }
     }
 }

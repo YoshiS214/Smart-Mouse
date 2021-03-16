@@ -1,6 +1,5 @@
 package com.example.smartmouse
 
-import android.app.PendingIntent.getActivity
 import android.content.Context
 import android.os.Bundle
 import android.os.Handler
@@ -23,10 +22,11 @@ import com.example.smartmouse.bluetooth.bDevice
 import com.google.android.material.navigation.NavigationView
 
 class MainActivity : AppCompatActivity(){
-    private lateinit var appBarConfiguration: AppBarConfiguration
+    private lateinit var appBarConfig: AppBarConfiguration
     private lateinit var mouse: Mouse
     private lateinit var selectedDevice: bDevice
     private lateinit var sensor: Sensor
+    private var speed: Int = if (DataStore.getMouseSpeed(applicationContext) != null) DataStore.getMouseSpeed(applicationContext)!! else 10
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity(){
 
         sensor = Sensor()
 
-        appBarConfiguration = AppBarConfiguration(
+        appBarConfig = AppBarConfiguration(
             setOf(
                 R.id.nav_mouse,
                 R.id.nav_cross,
@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity(){
             ), drawerLayout
         )
 
-        setupActionBarWithNavController(navController, appBarConfiguration)
+        setupActionBarWithNavController(navController, appBarConfig)
         navView.setupWithNavController(navController)
     }
 
@@ -101,7 +101,7 @@ class MainActivity : AppCompatActivity(){
 
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment)
-        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+        return navController.navigateUp(appBarConfig) || super.onSupportNavigateUp()
     }
 
     fun getMouse(): Mouse{
@@ -118,6 +118,15 @@ class MainActivity : AppCompatActivity(){
 
     fun getSensor():Sensor{
         return sensor
+    }
+
+    fun getSpeed():Int{
+        return speed
+    }
+
+    fun updateSpeed(new : Int){
+        speed = new
+        DataStore.writeMouseSpeed(applicationContext, new)
     }
 
     override fun onStop() {

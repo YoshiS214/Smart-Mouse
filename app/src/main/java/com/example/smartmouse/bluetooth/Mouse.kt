@@ -9,7 +9,8 @@ class Mouse(var context: Context): BLEActivity() {
     private lateinit var mouse: MousePeripheral
     private var started by Delegates.notNull<Boolean>()
 
-    init{
+    override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
+        super.onCreate(savedInstanceState, persistentState)
         mouse = MousePeripheral()
         started = false
     }
