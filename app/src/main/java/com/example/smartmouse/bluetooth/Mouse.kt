@@ -9,8 +9,7 @@ class Mouse(var context: Context): BLEActivity() {
     private lateinit var mouse: MousePeripheral
     private var started by Delegates.notNull<Boolean>()
 
-    override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
-        super.onCreate(savedInstanceState, persistentState)
+    init{
         mouse = MousePeripheral()
         started = false
     }
@@ -64,13 +63,5 @@ class Mouse(var context: Context): BLEActivity() {
 
     fun connectedDevice():Array<bDevice>{
         return mouse.connectedDevice()
-    }
-
-    fun storeData(){
-        mouse.saveData()
-    }
-
-    fun deleteData(){
-        mouse.deleteData()
     }
 }

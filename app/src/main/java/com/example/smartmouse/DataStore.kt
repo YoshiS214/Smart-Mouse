@@ -12,22 +12,26 @@ class DataStore {
 
     companion object{
         fun getBleDevices(context: Context): Array<bDevice>{
-            var data: SharedPreferences = context.getSharedPreferences("ble", Context.MODE_PRIVATE)
-            var gson: Gson = Gson()
+
 
             return try {
-                gson.fromJson(data.getString("devices", ""), Array<BluetoothDevice>::class.java)
+                var data: SharedPreferences = context.getSharedPreferences("ble", Context.MODE_PRIVATE)
+                var gson: Gson = Gson()
+
+                var map: Map<String, String> = data.all as Map<String, String>
+                var devices = map.values.map { x -> gson.fromJson(x, bDevice::class.java) }
+                devices.toTypedArray() as Array<bDevice>
             }catch (e: Exception){
                 arrayOf<bDevice>()
             }
         }
 
-        fun writeBleDevices(context: Context, devices: Array<BluetoothDevice>){
+        fun writeBleDevice(context: Context, device: bDevice){
             var data: SharedPreferences = context.getSharedPreferences("ble", Context.MODE_PRIVATE)
             var gson: Gson = Gson()
-            data.edit().putString("devices", gson.toJson(devices)).commit()
-
+            data.edit().putString(device.address, gson.toJson(device)).commit()
         }
+
 
         fun getMouseSpeed(context: Context): Int?{
             var data: SharedPreferences = context.getSharedPreferences("mouse", Context.MODE_PRIVATE)

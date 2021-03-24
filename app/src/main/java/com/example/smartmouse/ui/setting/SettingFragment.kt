@@ -11,10 +11,12 @@ import android.widget.*
 import androidx.fragment.app.Fragment
 import com.example.smartmouse.MainActivity
 import com.example.smartmouse.R
+import com.example.smartmouse.bluetooth.Keyboard
 import com.example.smartmouse.bluetooth.Mouse
 
 class SettingFragment : Fragment(){
     lateinit var mouse: Mouse
+    lateinit var keyboard: Keyboard
     lateinit var mainActivity: MainActivity
 
     override fun onCreateView(
@@ -24,7 +26,7 @@ class SettingFragment : Fragment(){
     ): View? {
         mainActivity = activity as MainActivity
         mouse = mainActivity.getMouse()
-        mouse.setPeripheralProvider()
+        keyboard = mainActivity.getKeyboard()
         return inflater.inflate(R.layout.fragment_setting, container, false)
 
     }
@@ -36,18 +38,18 @@ class SettingFragment : Fragment(){
         val deviceNameSpinner: Spinner = view.findViewById(R.id.spinner_DeviceName)
         val mouseSeekBar: SeekBar = view.findViewById(R.id.seekbar_mouse)
         val resetButton: Button = view.findViewById(R.id.button_reset)
-        var adapter = ArrayAdapter(mainActivity.applicationContext, android.R.layout.simple_spinner_item, arrayOf("No device found"))
+        var adapter = ArrayAdapter(mainActivity.applicationContext, R.layout.spinner_style, arrayOf("No device found"))
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         deviceNameSpinner.adapter = adapter
         val handler: Handler = Handler()
         var runnable: Runnable = Runnable {  }
         runnable = Runnable {
             if (peripheralSwitch.isChecked){
-                adapter = ArrayAdapter(mainActivity.applicationContext, android.R.layout.simple_spinner_item, mouse.getDevicesName())
+                adapter = ArrayAdapter(mainActivity.applicationContext, R.layout.spinner_style, mouse.getDevicesName())
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                 deviceNameSpinner.adapter = adapter
             }
-            handler.postDelayed(runnable, 10000)
+            handler.postDelayed(runnable, 1000)
         }
 
         var deviceName: String = ""
@@ -73,13 +75,19 @@ class SettingFragment : Fragment(){
             if (b){
                 compoundButton.setOnClickListener{
                     //BLE.enableBLE()
+                    mouse.setPeripheralProvider()
                     mouse.start()
                     mainActivity.updateMouse(mouse)
+                    //keyboard.setPeripheralProvider()
+                    //keyboard.start()
+                    mainActivity.updateKeyboard(keyboard)
                 }
             }else{
                 compoundButton.setOnClickListener{
                     mouse.stop()
                     mainActivity.updateMouse(mouse)
+                    //keyboard.stop()
+                    mainActivity.updateKeyboard(keyboard)
                     //BLE.disableBLE()
                 }
             }
@@ -88,7 +96,9 @@ class SettingFragment : Fragment(){
         connectButton.setOnClickListener {
             mouse.connect(deviceName)
             mainActivity.updateMouse(mouse)
-            mouse.storeData()
+            //keyboard.connect(deviceName)
+            //mainActivity.updateKeyboard(keyboard)
+            //keyboard.storeData()
         }
 
         mouseSeekBar.progress = mainActivity.getSpeed()
@@ -116,14 +126,16 @@ class SettingFragment : Fragment(){
                 setTitle("Reset")
                 setMessage("Are you sure to delete all setting?\n(You will need to do pairing again.)")
                 setPositiveButton("Yes", DialogInterface.OnClickListener { _, _ ->
-                    mouse.deleteData()
                     mouse.stop()
+                    //keyboard.stop()
                     adapter = ArrayAdapter(mainActivity.applicationContext, android.R.layout.simple_spinner_item, mouse.getDevicesName())
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                     deviceNameSpinner.adapter = adapter
                     peripheralSwitch.isChecked = false
                     mouse.setPeripheralProvider()
                     mainActivity.updateMouse(mouse)
+                    //keyboard.setPeripheralProvider()
+                    //mainActivity.updateKeyboard(keyboard)
                 })
                 setNegativeButton("Cancel", null)
                 show()
@@ -131,4 +143,7 @@ class SettingFragment : Fragment(){
         }
     }
 
+    override fun onStop() {
+        super.onStop()
+    }
 }

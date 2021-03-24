@@ -157,6 +157,7 @@ abstract class BLE{
     private val clientCharConfigDescriptor: UUID = getUUID(0x2902)
 
     private val hidInfoResponse: ByteArray = byteArrayOf(0x11, 0x01, 0x00, 0x03)
+    private val emptyByte: ByteArray = byteArrayOf()
 
     private var intentFilter : IntentFilter = IntentFilter()
 
@@ -173,15 +174,15 @@ abstract class BLE{
 
     var bleEnabled: Boolean = true
     var bleDeviceMap: MutableMap<String, bDevice> = HashMap()
+    var connectionAllowed = false
 
     lateinit var appContext: Context
     lateinit var handler: Handler
-    lateinit var thread: HandlerThread
     lateinit var timer: Timer
     lateinit var adapter: BluetoothAdapter
     lateinit var advertiser : BluetoothLeAdvertiser
     lateinit var adSettings: android.bluetooth.le.AdvertiseSettings
-    lateinit var inputReportChar: BluetoothGattCharacteristic
+    var inputReportChar: BluetoothGattCharacteristic? = null
     lateinit var gattServer: BluetoothGattServer
     lateinit var adData: AdvertiseData
     lateinit var scanResult: AdvertiseData
@@ -196,7 +197,8 @@ abstract class BLE{
             status: Int,
             newState: Int
         ) {
-            super.onConnectionStateChange(device, status, newState);
+
+            //super.onConnectionStateChange(device, status, newState);
             when (newState){
                 BluetoothProfile.STATE_CONNECTED -> {
                     if (device != null) {
@@ -238,10 +240,11 @@ abstract class BLE{
                                 }
 
                                 device.createBond()
+                                DataStore.writeBleDevice(appContext, device)
                             }
                             bDevice.BOND_BONDED -> {
                                 handler.post {
-                                    if (gattServer != null) {
+                                    if (gattServer != null && connectionAllowed) {
                                         gattServer.connect(device, true)
                                     }
                                 }
@@ -253,15 +256,15 @@ abstract class BLE{
                     }
                 }
                 BluetoothProfile.STATE_DISCONNECTED -> {
-                    if (device != null) {
+                    if (device != null && connectionAllowed) {
                         handler.post {
                             if (gattServer != null) {
                                 gattServer.connect(device, true)
                             }
                         }
-                        synchronized(bleDeviceMap){
-                            bleDeviceMap.remove(device.address)
-                        }
+                        //synchronized(bleDeviceMap){
+                            //bleDeviceMap.remove(device.address)
+                        //}
                     }
                 }
                 else -> {}
@@ -274,6 +277,7 @@ abstract class BLE{
             offset: Int,
             characteristic: BluetoothGattCharacteristic?
         ) {
+            /*
             super.onCharacteristicReadRequest(device, requestId, offset, characteristic)
             if(gattServer != null && characteristic != null){
                 handler.post {
@@ -301,6 +305,48 @@ abstract class BLE{
 
                 }
             }
+
+             */
+            if (gattServer== null) {
+                return
+            }
+
+            if (characteristic != null) {
+                handler.post(Runnable {
+                    val characteristicUuid = characteristic.uuid
+                    if (isUUIDMatch(hidInfoChar, characteristicUuid)) {
+                        gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, hidInfoResponse)
+                    } else if (isUUIDMatch(reportMapChar, characteristicUuid)) {
+                        if (offset == 0) {
+                            gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, getReportMap())
+                        } else {
+                            val remainLength = getReportMap().size - offset
+                            if (remainLength > 0) {
+                                val data = ByteArray(remainLength)
+                                System.arraycopy(getReportMap(), offset, data, 0, remainLength)
+                                gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, data)
+                            } else {
+                                gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, null)
+                            }
+                        }
+                    } else if (isUUIDMatch(hidControlPointChar, characteristicUuid)) {
+                        gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, byteArrayOf(0))
+                    } else if (isUUIDMatch(reportChar, characteristicUuid)) {
+                        gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, emptyByte)
+                    } else if (isUUIDMatch(manufactureNameChar, characteristicUuid)) {
+                        gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, manufactureName.toByteArray())
+                    } else if (isUUIDMatch(serialNumChar, characteristicUuid)) {
+                        gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, serialNumber.toByteArray())
+                    } else if (isUUIDMatch(modelNumChar, characteristicUuid)) {
+                        gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, deviceName.toByteArray())
+                    } else if (isUUIDMatch(batteryLevel, characteristicUuid)) {
+                        gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, byteArrayOf(batteryPercentage.toByte()))
+                    } else {
+                        gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, characteristic.value)
+                    }
+                })
+            }
+
         }
 
         override fun onCharacteristicWriteRequest(
@@ -312,15 +358,7 @@ abstract class BLE{
             offset: Int,
             value: ByteArray?
         ) {
-            super.onCharacteristicWriteRequest(
-                device,
-                requestId,
-                characteristic,
-                preparedWrite,
-                responseNeeded,
-                offset,
-                value
-            )
+            //super.onCharacteristicWriteRequest( device, requestId, characteristic, preparedWrite, responseNeeded, offset, value )
             if (gattServer != null){
                 handler.post {
                     if (responseNeeded){
@@ -351,7 +389,7 @@ abstract class BLE{
             offset: Int,
             descriptor: BluetoothGattDescriptor?
         ) {
-            super.onDescriptorReadRequest(device, requestId, offset, descriptor)
+            //super.onDescriptorReadRequest(device, requestId, offset, descriptor)
             if (gattServer != null){
                 handler.post {
                     var value: ByteArray = byteArrayOf()
@@ -395,15 +433,7 @@ abstract class BLE{
             offset: Int,
             value: ByteArray?
         ) {
-            super.onDescriptorWriteRequest(
-                device,
-                requestId,
-                descriptor,
-                preparedWrite,
-                responseNeeded,
-                offset,
-                value
-            )
+            //super.onDescriptorWriteRequest( device, requestId, descriptor, preparedWrite, responseNeeded, offset, value )
             var result: Int = BluetoothGatt.GATT_FAILURE
             if (descriptor != null) {
                 descriptor.value = value
@@ -424,7 +454,7 @@ abstract class BLE{
         }
 
         override fun onServiceAdded(status: Int, service: BluetoothGattService?) {
-            super.onServiceAdded(status, service)
+            //super.onServiceAdded(status, service)
         }
     }
 
@@ -476,8 +506,10 @@ abstract class BLE{
             }
         }
 
-        synchronized(bleDeviceMap){
-            bleDeviceMap.putAll(DataStore.getBleDevices(appContext).map { x -> x.address }.zip(DataStore.getBleDevices(appContext)))
+        DataStore.getBleDevices(appContext).forEach { x ->
+            synchronized(bleDeviceMap){
+                bleDeviceMap.put(x.address,x)
+            }
         }
 
         gattServer = bluetoothManager.openGattServer(appContext, gattCallback)
@@ -488,10 +520,10 @@ abstract class BLE{
 
         task = object: TimerTask(){
             override fun run() {
-                if (inputReport.size != 0){
+                if (inputReport.size != 0 && !inputReport.isNullOrEmpty()){
                     val input: Report = inputReport.poll()
                     if (input != null && inputReportChar != null){
-                        inputReportChar.value = input.getReport()
+                        inputReportChar!!.value = input.getReport()
                         var device = input.getDevice()
                         handler.post {
                             if (gattServer != null){
@@ -501,6 +533,7 @@ abstract class BLE{
                                         inputReportChar,
                                         false
                                     )
+                                    Log.d("DataSent", inputReportChar!!.value.toString())
                                 }catch (e: Exception){
                                     Log.d("Report", e.toString())
                                 }
@@ -522,6 +555,7 @@ abstract class BLE{
     }
 
     private fun addService(service: gattService){
+        /*
         var added = false
         if (gattServer != null){
             while (added){
@@ -533,6 +567,20 @@ abstract class BLE{
                 }
             }
         }
+
+         */
+        assert(gattServer != null)
+        var serviceAdded = false
+        while (!serviceAdded) {
+            try {
+                Thread.sleep(500)
+                serviceAdded = gattServer!!.addService(service)
+            } catch (e: Exception) {
+
+            }
+        }
+
+
     }
 
     private fun getHIDService(reports: BooleanArray): gattService{
@@ -621,6 +669,7 @@ abstract class BLE{
     }
 
     private fun getDeviceInfoService(): gattService{
+        /*
         val services: ArrayList<UUID> = arrayListOf(
             manufactureNameChar,
             modelNumChar,
@@ -641,6 +690,31 @@ abstract class BLE{
             while (!service.addCharacteristic(characteristic)){}
         }
 
+        return service
+
+         */
+        var service = BluetoothGattService(deviceInfoService, gattService.SERVICE_TYPE_PRIMARY);
+        run {
+            val characteristic = BluetoothGattCharacteristic(
+                manufactureNameChar,
+                gattChar.PROPERTY_READ,
+                gattChar.PERMISSION_READ_ENCRYPTED)
+            service.addCharacteristic(characteristic)
+        }
+        run {
+            val characteristic: BluetoothGattCharacteristic = BluetoothGattCharacteristic(
+                modelNumChar,
+                gattChar.PROPERTY_READ,
+                gattChar.PERMISSION_READ_ENCRYPTED)
+            service.addCharacteristic(characteristic)
+        }
+        run {
+            val characteristic: BluetoothGattCharacteristic = BluetoothGattCharacteristic(
+                serialNumChar,
+                gattChar.PROPERTY_READ,
+                gattChar.PERMISSION_READ_ENCRYPTED)
+            service.addCharacteristic(characteristic)
+        }
         return service
     }
 
@@ -668,6 +742,7 @@ abstract class BLE{
     }
 
     fun start(){
+        connectionAllowed = true
         handler.post {
             adSettings = AdvertiseSettings.Builder()
                 .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY)
@@ -717,18 +792,18 @@ abstract class BLE{
                 }
             }
              */
-            if (gattServer != null){
-                try{
-                    for(x in devices){
-                        gattServer.cancelConnection(x)
-                    }
-                    gattServer.close()
-
-                }catch (e: Exception){
-                    Log.d(null, e.toString())
+            try{
+                for(x in devices){
+                    gattServer.cancelConnection(x)
                 }
+                gattServer.close()
+
+            }catch (e: Exception){
+                Log.d("Stop", e.toString())
             }
+
         }
+        connectionAllowed = false
 
     }
     
@@ -796,9 +871,9 @@ abstract class BLE{
                 names = names.plus(device.name)
             }
         }catch (e: Exception){
+            Log.d("getDeviceName", e.message!!)
             names = arrayOf("Error: No device found")
         }
-
 
         return names
     }
@@ -813,21 +888,12 @@ abstract class BLE{
         }
 
         if (device != null){
-            if (device.bondState == bDevice.BOND_NONE){
-                try{
-                    device.setPairingConfirmation(true)
-                }catch (e: Exception){
-                    Log.d(null, e.toString())
-                }
-
-                device.createBond()
-            }
 
             if (gattServer != null){
-                try {
-                    device.createInsecureRfcommSocketToServiceRecord(hidService).connect()
-                }catch (e: Exception){
-                    gattServer.connect(device, true)
+                handler.post {
+                    if (gattServer != null && connectionAllowed) {
+                        gattServer.connect(device, true)
+                    }
                 }
 
                 Log.d("Device", "${device.name}に繋げるよ")
@@ -836,21 +902,25 @@ abstract class BLE{
     }
 
     open fun connectedDevice():Array<bDevice>{
-        return devices.filter { x -> x.bondState == bDevice.BOND_BONDED }.toTypedArray()
-    }
+        return try{
+            devices.filter { x -> x.bondState == bDevice.BOND_BONDED }.toTypedArray()
+        }catch (e: Exception){
+            gattServer.connectedDevices.toTypedArray()
+        }
 
-    open fun saveData(){
-        DataStore.writeBleDevices(appContext, devices.toTypedArray())
-    }
-
-    open fun deleteData(){
-        DataStore.writeBleDevices(appContext, arrayOf())
     }
 
     private fun getUUID(uuid_short: Int): UUID{
         return UUID.fromString(uuidFirst4+ String.format("%04X", uuid_short and 0xffff) + uuidLast24)
     }
 
+    private fun isUUIDMatch(uuid1: UUID, uuid2: UUID): Boolean {
+        return if ((uuid1.mostSignificantBits and -0xffff00000001L == 0L && uuid1.leastSignificantBits == 0L) || (uuid2.mostSignificantBits and -0xffff00000001L == 0L && uuid2.leastSignificantBits == 0L)){
+            ((uuid1.mostSignificantBits and 0x0000ffff00000000L) == (uuid2.mostSignificantBits and 0x0000ffff00000000L))
+        }else{
+            uuid1 == uuid2
+        }
+    }
 
 }
 

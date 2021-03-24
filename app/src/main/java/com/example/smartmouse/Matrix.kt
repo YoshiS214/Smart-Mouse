@@ -80,7 +80,7 @@ class Matrix {
                 for (x in 0 until op1.row) {
                     for (y in 0 until op2.column) {
                         for (z in 0 until op1.column) {
-                            result[op2.column * x + y] += op1.matrix[z + op1.row * x] * op2.matrix[z * op2.column + y]
+                            result[op2.column * x + y] += op1.matrix[z + op1.column * x] * op2.matrix[z * op2.column + y]
                         }
                     }
                 }

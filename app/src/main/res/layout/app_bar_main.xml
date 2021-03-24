@@ -24,7 +24,10 @@
             android:id="@+id/spinner_selectDevice"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="end|center_horizontal"/>
+            android:backgroundTint="#FFFFFF"
+            android:gravity="end|center_horizontal"
+            android:textAlignment="textEnd"
+            android:textColor="@android:color/white" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <include layout="@layout/content_main" />

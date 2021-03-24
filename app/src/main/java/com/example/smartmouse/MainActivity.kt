@@ -9,6 +9,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
@@ -17,16 +18,19 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.example.smartmouse.bluetooth.Keyboard
 import com.example.smartmouse.bluetooth.Mouse
 import com.example.smartmouse.bluetooth.bDevice
 import com.google.android.material.navigation.NavigationView
+import kotlin.properties.Delegates
 
 class MainActivity : AppCompatActivity(){
     private lateinit var appBarConfig: AppBarConfiguration
     private lateinit var mouse: Mouse
-    private lateinit var selectedDevice: bDevice
+    private lateinit var keyboard: Keyboard
+    private var selectedDevice: bDevice? = null
     private lateinit var sensor: Sensor
-    private var speed: Int = if (DataStore.getMouseSpeed(applicationContext) != null) DataStore.getMouseSpeed(applicationContext)!! else 10
+    private var speed: Int = 0
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,18 +38,18 @@ class MainActivity : AppCompatActivity(){
         setContentView(R.layout.activity_main)
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         val deviceSpinner: Spinner = findViewById(R.id.spinner_selectDevice)
-        var adapter = ArrayAdapter(applicationContext, android.R.layout.simple_spinner_item, arrayOf("No device found"))
+        var adapter = ArrayAdapter(applicationContext, R.layout.spinner_style, arrayOf("No device found"))
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         deviceSpinner.adapter = adapter
         val handler: Handler = Handler()
         var runnable: Runnable = Runnable {  }
         runnable = Runnable {
-            var devices = mouse.connectedDevice()
+            var devices: Array<bDevice> = mouse.connectedDevice()
             var names = devices.map { x -> x.name }
-            adapter = ArrayAdapter(applicationContext, android.R.layout.simple_spinner_item, names)
+            adapter = ArrayAdapter(applicationContext, R.layout.spinner_style, names)
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             deviceSpinner.adapter = adapter
-            handler.postDelayed(runnable, 10000)
+            handler.postDelayed(runnable, 5000)
         }
 
         handler.post(runnable)
@@ -71,9 +75,12 @@ class MainActivity : AppCompatActivity(){
         // menu should be considered as top level destinations.
 
         mouse = Mouse(this)
-        mouse.setPeripheralProvider()
+        //mouse.setPeripheralProvider()
+        keyboard = Keyboard(this)
+        //keyboard.setPeripheralProvider()
 
-        sensor = Sensor()
+        sensor = Sensor(this)
+        speed = if (DataStore.getMouseSpeed(applicationContext) != null) DataStore.getMouseSpeed(applicationContext)!! else 10
 
         appBarConfig = AppBarConfiguration(
             setOf(
@@ -90,7 +97,7 @@ class MainActivity : AppCompatActivity(){
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
+
         val inputMethodManager: InputMethodManager? = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
 
         inputMethodManager?.hideSoftInputFromWindow(this.currentFocus?.windowToken, 0)
@@ -101,6 +108,10 @@ class MainActivity : AppCompatActivity(){
 
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment)
+        val nameText = findViewById<TextView>(R.id.text_computerName)
+        val macText = findViewById<TextView>(R.id.text_mac)
+        nameText.text = selectedDevice?.name
+        macText.text = selectedDevice?.address
         return navController.navigateUp(appBarConfig) || super.onSupportNavigateUp()
     }
 
@@ -112,7 +123,15 @@ class MainActivity : AppCompatActivity(){
         this.mouse = mouse
     }
 
-    fun getDevice(): bDevice{
+    fun getKeyboard(): Keyboard{
+        return keyboard
+    }
+
+    fun updateKeyboard(keyboard: Keyboard){
+        this.keyboard = keyboard
+    }
+
+    fun getDevice(): bDevice?{
         return selectedDevice
     }
 
@@ -127,11 +146,6 @@ class MainActivity : AppCompatActivity(){
     fun updateSpeed(new : Int){
         speed = new
         DataStore.writeMouseSpeed(applicationContext, new)
-    }
-
-    override fun onStop() {
-        super.onStop()
-        mouse.storeData()
     }
 
 }

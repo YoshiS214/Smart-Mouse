@@ -1,15 +1,18 @@
 package com.example.smartmouse
 
+import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Handler
+import android.util.Log
+
 import kotlin.properties.Delegates
 
-class Sensor: SensorEventListener {
+class Sensor(context: Context): SensorEventListener {
     private var handler: Handler = Handler()
-    private var sensorManager : SensorManager by Delegates.notNull<SensorManager>()
+    private var sensorManager : SensorManager = context.applicationContext.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     //private var accelerations : ArrayList<DoubleArray>? = ArrayList()
     //private var linearAccelerations : ArrayList<DoubleArray>? = ArrayList()
     //private var orientations : ArrayList<DoubleArray>? = ArrayList()
@@ -73,10 +76,9 @@ class Sensor: SensorEventListener {
             SensorManager.getRotationMatrix(rotationMatrix,null,accelerometerReading,magnetometerReading)
             SensorManager.getOrientation(rotationMatrix, orientation)
             accelerations.copy(Matrix.multipled(Matrix(3,3,rotationMatrix)!!, Matrix(3,1,linearReading)))
-            check.copy(Matrix.addSubed(Matrix.scaled(lowpass, filterCoefficient), Matrix.scaled(accelerations, (1-filterCoefficient)), '+'))
-            lowpass.copy(Matrix(3,1, check.matrix))
+            lowpass.copy(Matrix.addSubed(Matrix.scaled(lowpass, filterCoefficient), Matrix.scaled(accelerations, (1-filterCoefficient)), '+'))
             highpass.copy(Matrix.addSubed(accelerations, lowpass, '-'))
-            velocity = Matrix.addSubed(Matrix.scaled(Matrix.addSubed(lowpass,highpass, '+'), 0.5F*(timeStamp.second - timeStamp.first).toFloat()), velocity, '+')
+            velocity = Matrix.addSubed(Matrix.scaled(highpass, 0.5F*(timeStamp.second - timeStamp.first).toFloat()), velocity, '+')
             displacements = Matrix.addSubed(Matrix.scaled(Matrix.addSubed(preVelocity,velocity, '+'), 0.5F*(timeStamp.second - timeStamp.first).toFloat()), displacements, '+')
             preVelocity = velocity
         }
@@ -88,7 +90,12 @@ class Sensor: SensorEventListener {
         handler.post{
             displacements.zero()
         }
-        return Pair<FloatArray,FloatArray>(temp.toFloatArray(), orientation)
+        var tempDisplacements: FloatArray = temp.toFloatArray()
+        for (x in tempDisplacements.indices){
+            tempDisplacements[x] = tempDisplacements[x].div(1000000)
+        }
+        Log.d("SensorValue", "x:${tempDisplacements[0]}, y:${tempDisplacements[1]}, z:${tempDisplacements[2]}")
+        return Pair<FloatArray,FloatArray>(tempDisplacements, orientation)
     }
 
     fun reset(){

@@ -34,7 +34,6 @@
                 android:id="@+id/input_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:maxLength="1"
                 android:maxLines="1"
                 android:inputType="textVisiblePassword"
                 android:textAlignment="center"/>
@@ -57,21 +56,19 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
-            <ToggleButton
+            <Button
                 android:id="@+id/key_esc"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textOff="esc"
-                android:textOn="esc" />
+                android:text="esc" />
 
-            <ToggleButton
+            <Button
                 android:id="@+id/key_del"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textOff="del"
-                android:textOn="del" />
+                android:text="del" />
 
             <ToggleButton
                 android:id="@+id/key_shift"
@@ -89,13 +86,12 @@
                 android:textOff="ctrl"
                 android:textOn="ctrl" />
 
-            <ToggleButton
+            <Button
                 android:id="@+id/key_fn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textOff="fn"
-                android:textOn="fn" />
+                android:text="fn"/>
 
             <ToggleButton
                 android:id="@+id/key_alt"

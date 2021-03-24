@@ -13,10 +13,12 @@ import com.example.smartmouse.R
 import com.example.smartmouse.bluetooth.BLE
 import com.example.smartmouse.bluetooth.Mouse
 import kotlinx.android.synthetic.main.fragment_cross.*
+import kotlin.math.roundToInt
 
 class CrossFragment: Fragment(){
     private lateinit var mouse: Mouse
     private lateinit var mainActivity: MainActivity
+    var speed: Int = 1
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -25,6 +27,7 @@ class CrossFragment: Fragment(){
     ): View? {
         mainActivity = activity as MainActivity
         mouse = mainActivity.getMouse()
+        speed = mainActivity.getSpeed()
         return inflater.inflate(R.layout.fragment_cross, container, false)
 
     }
@@ -39,27 +42,45 @@ class CrossFragment: Fragment(){
         val rightClick: ImageView = view.findViewById(R.id.button_rightClick)
 
         upButton.setOnClickListener{
-            mouse.changeState(0,- 20,0, left = false, right = false, middle = false, mainActivity.getDevice())
+            var device = mainActivity.getDevice()
+            if (device != null){
+                mouse.changeState(0,- 2*speed,0, left = false, right = false, middle = false, device)
+            }
         }
 
         downButton.setOnClickListener {
-            mouse.changeState(0,20,0, left = false, right = false, middle = false, mainActivity.getDevice())
+            var device = mainActivity.getDevice()
+            if (device != null) {
+                mouse.changeState(0,2*speed,0, left = false, right = false, middle = false, device)
+            }
         }
 
         leftButton.setOnClickListener {
-            mouse.changeState(-20,0,0, left = false, right = false, middle = false, mainActivity.getDevice())
+            var device = mainActivity.getDevice()
+            if (device != null) {
+                mouse.changeState(-2*speed,0,0, left = false, right = false, middle = false, device)
+            }
         }
 
         rightButton.setOnClickListener {
-            mouse.changeState(20,0,0, left = false, right = false, middle = false, mainActivity.getDevice())
+            var device = mainActivity.getDevice()
+            if (device != null) {
+                mouse.changeState(2*speed,0,0, left = false, right = false, middle = false, device)
+            }
         }
 
         leftClick.setOnClickListener {
-            mouse.changeState(0,0,0, left = true, right = false, middle = false, mainActivity.getDevice())
+            var device = mainActivity.getDevice()
+            if (device != null) {
+                mouse.changeState(0,0,0, left = true, right = false, middle = false, device)
+            }
         }
 
         rightClick.setOnClickListener {
-            mouse.changeState(0,0,0, left = false, right = true, middle = false, mainActivity.getDevice())
+            var device = mainActivity.getDevice()
+            if (device != null) {
+                mouse.changeState(0,0,0, left = false, right = true, middle = false, device)
+            }
         }
     }
 }
