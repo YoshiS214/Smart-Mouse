@@ -1,34 +1,40 @@
 package com.example.smartmouse.bluetooth
 
 import android.content.Context
-import android.os.Bundle
-import android.os.PersistableBundle
 import kotlin.properties.Delegates
 
-class Mouse(var context: Context): BLEActivity() {
+class Mouse(var context: Context) : BLEActivity() {
     private lateinit var mouse: MousePeripheral
     private var started by Delegates.notNull<Boolean>()
 
-    init{
+    init {
         mouse = MousePeripheral()
         started = false
     }
 
-    fun changeState(x:Int, y:Int, z:Int, left:Boolean, right:Boolean, middle:Boolean, device: bDevice){
-        var displacement: IntArray = intArrayOf(x,y,z)
+    fun changeState(
+        x: Int,
+        y: Int,
+        z: Int,
+        left: Boolean,
+        right: Boolean,
+        middle: Boolean,
+        device: bDevice
+    ) {
+        var displacement: IntArray = intArrayOf(x, y, z)
         var buttons: BooleanArray = booleanArrayOf(left, right, middle)
 
         mouse.sendData(displacement, buttons, device)
     }
 
-    override fun setPeripheralProvider() {
-        mouse.initialise(context)
+    override fun setPeripheralProvider(): String? {
+        return mouse.initialise(context)
     }
 
     override fun onDestroy() {
         super.onDestroy()
 
-        if(mouse !=null){
+        if (mouse != null) {
             mouse.stop()
         }
     }
@@ -40,28 +46,28 @@ class Mouse(var context: Context): BLEActivity() {
         }
     }
 
-    fun start(){
+    fun start() {
         mouse.start()
         started = true
     }
 
-    fun isStarted(): Boolean{
+    fun isStarted(): Boolean {
         return started
     }
 
-    fun isReady(): Boolean{
+    fun isReady(): Boolean {
         return mouse.isReady()
     }
 
-    fun getDevicesName(): Array<String>{
+    fun getDevicesName(): Array<String> {
         return mouse.getDevicesName()
     }
 
-    fun connect(name: String){
+    fun connect(name: String) {
         mouse.connect(name)
     }
 
-    fun connectedDevice():Array<bDevice>{
+    fun connectedDevice(): Array<bDevice> {
         return mouse.connectedDevice()
     }
 }

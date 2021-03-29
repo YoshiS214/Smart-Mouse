@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import kotlin.experimental.or
 
-class KeyboardPeripheral: BLE() {
+class KeyboardPeripheral : BLE() {
     private val emptyReport = byteArrayOf(0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0)
     private val reportMapKeyboard = byteArrayOf(
         USAGE_PAGE(1),          0x01,  // Generic Desktop Ctrls
@@ -40,10 +40,11 @@ class KeyboardPeripheral: BLE() {
         INPUT(1),               0x00,  //   Data,Array,Abs,No Wrap,Linear,Preferred State,No Null Position
         END_COLLECTION(0)
     )
-    private val keyNoneModifier = 0
     private val ctrlKeyModifier = 1
     private val shiftKeyModifier = 2
     private val altKeyModifier = 4
+    /*
+    private val keyNoneModifier = 0
     private val KEY_F1 = 0x3a
     private val KEY_F2 = 0x3b
     private val KEY_F3 = 0x3c
@@ -68,17 +69,18 @@ class KeyboardPeripheral: BLE() {
     private val KEY_LEFT_ARROW = 0x50
     private val KEY_DOWN_ARROW = 0x51
     private val KEY_UP_ARROW = 0x52
+     */
 
-    private var modifiers: BooleanArray = booleanArrayOf(false, false, false)  // ctrl, shift. alt
-    
-    
-    fun initiallise(context: Context){
+    private var modifiers: BooleanArray = booleanArrayOf(false, false, false)  // ctrl, shift, alt
+
+    fun initiallise(context: Context): String? {
         var error: String? = super.initialise(context, booleanArrayOf(true, true, false), 20)
-        if (error != null){
+        if (error != null) {
             Log.d("KEYBOARD INITIALISE", error)
         }
+        return error
     }
-    
+
     override fun getOutputReport(output: ByteArray) {
         Log.d("BLE", output.decodeToString())
     }
@@ -87,7 +89,7 @@ class KeyboardPeripheral: BLE() {
         return reportMapKeyboard
     }
 
-    private fun getKeyCode(char: String?): Byte{
+    private fun getKeyCode(char: String?): Byte {
         return when (char) {
             "A", "a" -> 0x04
             "B", "b" -> 0x05
@@ -148,28 +150,28 @@ class KeyboardPeripheral: BLE() {
         }
     }
 
-    private fun getModifier(char: String?): Byte{
+    private fun getModifier(char: String?): Byte { // Get state of modifier keys (Ctrl, shift, alt)
         var modifier: Byte = when (char) {
             "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "+", "{", "}", "|", ":", "\"", "~", "<", ">", "?" -> shiftKeyModifier.toByte()
             else -> 0
         }
-        if (modifiers[0]){
+        if (modifiers[0]) {
             modifier = ctrlKeyModifier.toByte() or modifier
         }
-        if (modifiers[1]){
+        if (modifiers[1]) {
             modifier = shiftKeyModifier.toByte() or modifier
         }
-        if (modifiers[2]){
+        if (modifiers[2]) {
             modifier = altKeyModifier.toByte() or modifier
         }
         return modifier
     }
 
-    fun sendKeyUp(device: bDevice){
+    private fun sendKeyUp(device: bDevice) {
         addInputReports(Report(device, emptyReport))
     }
 
-    fun sendKey(key: String, device: bDevice){
+    fun sendKey(key: String, device: bDevice) {
         var report = ByteArray(8)
         report[0] = getModifier(key)
         report[2] = getKeyCode(key)
@@ -177,10 +179,10 @@ class KeyboardPeripheral: BLE() {
         sendKeyUp(device)
     }
 
-    fun changeModifiersState(key: String, newState: Boolean){
-        when (key){
+    fun changeModifiersState(key: String, newState: Boolean) {
+        when (key) {
             "ctrl" -> modifiers[0] = newState
-            "shift" ->modifiers[1] = newState
+            "shift" -> modifiers[1] = newState
             "alt" -> modifiers[2] = newState
         }
     }

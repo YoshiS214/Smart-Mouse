@@ -36,7 +36,6 @@ class Mouse2dFragment : Fragment() {
         handler = Handler()
         speed = mainActivity.getSpeed()
         timer = Timer()
-
         return inflater.inflate(R.layout.fragment_2dmouse, container, false)
     }
 
@@ -48,21 +47,29 @@ class Mouse2dFragment : Fragment() {
         val downButton: Button = view.findViewById(R.id.button_down)
         val mouseState: Button = view.findViewById(R.id.button_state)
 
-        var measure: TimerTask = object: TimerTask(){
+        var measure: TimerTask = object : TimerTask() {
             override fun run() {
                 var tmp: Pair<FloatArray, FloatArray> = sensor.getDisplacement()
                 var device = mainActivity.getDevice()
-                if (device != null){
-                    if (tmp.first.max()!! > 1){
+                if (device != null) {
+                    if (tmp.first.maxOrNull()!! > 1) { // If value received is too big, make it smaller
                         ratio = 0.1f
                     }
-                    mouse.changeState((tmp.first[0]*speed*ratio).roundToInt(), (tmp.first[1]*speed*ratio).roundToInt(), scroll, leftButton.isPressed, rightButton.isPressed, false, device)
+                    mouse.changeState(
+                        (tmp.first[0] * speed * ratio).roundToInt(),
+                        (tmp.first[1] * speed * ratio).roundToInt(),
+                        scroll,
+                        leftButton.isPressed,
+                        rightButton.isPressed,
+                        false,
+                        device
+                    )
                 }
                 scroll = 0
             }
         }
 
-        upButton.setOnClickListener{
+        upButton.setOnClickListener {
             scroll += 10
         }
 
@@ -73,7 +80,7 @@ class Mouse2dFragment : Fragment() {
 
         timer.scheduleAtFixedRate(measure, 0, 10)
 
-        mouseState.setOnClickListener {
+        mouseState.setOnClickListener { // Return 3D mouse fragment
             fragmentManager?.popBackStack()
         }
     }
@@ -89,6 +96,4 @@ class Mouse2dFragment : Fragment() {
         timer.cancel()
         sensor.disableSensor()
     }
-
-
 }

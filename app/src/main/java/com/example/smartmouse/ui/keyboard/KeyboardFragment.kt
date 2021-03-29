@@ -9,7 +9,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ToggleButton
-import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import com.example.smartmouse.MainActivity
 import com.example.smartmouse.R
@@ -19,32 +18,30 @@ import com.example.smartmouse.bluetooth.bDevice
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.android.synthetic.main.fragment_keyboard.*
 import java.util.*
-import kotlin.math.roundToInt
 
 class KeyboardFragment : Fragment() {
-    private lateinit var  mouse: Mouse
-    private lateinit var keyboard : Keyboard
+    private lateinit var mouse: Mouse
+    private lateinit var keyboard: Keyboard
     private lateinit var mainActivity: MainActivity
     private lateinit var timer: Timer
     private lateinit var handler: Handler
+    private var initialiseError: String? = null
 
     override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
-    ): View? {
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? { // Stop mouse server and start keyboard
         mainActivity = activity as MainActivity
         mouse = mainActivity.getMouse()
-        mouse.stop()
+        if (mouse.isStarted()) {
+            mouse.stop()
+        }
         mainActivity.updateMouse(mouse)
         keyboard = mainActivity.getKeyboard()
-        keyboard.setPeripheralProvider()
-        keyboard.start()
-        mainActivity.updateKeyboard(keyboard)
         timer = Timer()
         handler = Handler(Looper.getMainLooper())
         val root = inflater.inflate(R.layout.fragment_keyboard, container, false)
-
         return root
     }
 
@@ -58,13 +55,19 @@ class KeyboardFragment : Fragment() {
         val fnKey: Button = view.findViewById(R.id.key_fn)
         val altKey: ToggleButton = view.findViewById(R.id.key_alt)
 
-        var read: TimerTask = object: TimerTask(){
+        initialiseError = keyboard.setPeripheralProvider()
+        if (initialiseError == null) {
+            keyboard.start()
+            mainActivity.updateKeyboard(keyboard)
+        }
+
+        var read: TimerTask = object : TimerTask() { // Get text typed and send character one by one and replace with ""
             override fun run() {
                 var device = mainActivity.getDevice()
                 var temp = ""
-                if (device != null){
+                if (device != null) {
                     temp = input_text.text.toString()
-                    if (temp != ""){
+                    if (temp != "") {
                         handler.post { textInput.setText("") }
                         temp.forEach { x ->
                             keyboard.keyChange("", device)
@@ -74,75 +77,78 @@ class KeyboardFragment : Fragment() {
                 }
             }
         }
-        
-        escKey.setOnClickListener {
-            var device: bDevice? = mainActivity.getDevice()
-            if (device != null) {
-                keyboard.keyChange("", device)
-                keyboard.keyChange("esc", device)
+        if (initialiseError == null) {
+            escKey.setOnClickListener {
+                var device: bDevice? = mainActivity.getDevice()
+                if (device != null) {
+                    keyboard.keyChange("", device)
+                    keyboard.keyChange("esc", device)
+                }
             }
-        }
-        
-        delKey.setOnClickListener {
-            var device: bDevice? = mainActivity.getDevice()
-            if (device != null) {
-                keyboard.keyChange("", device)
-                keyboard.keyChange("del", device)
-            }
-        }
-        
-        fnKey.setOnClickListener {
-            var device: bDevice? = mainActivity.getDevice()
-            if (device != null) {
-                keyboard.keyChange("", device)
-                keyboard.keyChange("fn", device)
-            }
-        }
 
-        textInput.setOnKeyListener { v, keyCode, event ->
-            when (event.action) {
-                KeyEvent.KEYCODE_ENTER -> {
-                    var device: bDevice? = mainActivity.getDevice()
-                    if (device != null) {
-                        keyboard.keyChange("", device)
-                        keyboard.keyChange("ent", device)
-                    }
-                    true
-                }
-                KeyEvent.KEYCODE_BACK -> {
-                    var device: bDevice? = mainActivity.getDevice()
-                    if (device != null) {
-                        keyboard.keyChange("", device)
-                        keyboard.keyChange("back", device)
-                    }
-                    true
-                }
-                else -> {
-                    false
+            delKey.setOnClickListener {
+                var device: bDevice? = mainActivity.getDevice()
+                if (device != null) {
+                    keyboard.keyChange("", device)
+                    keyboard.keyChange("del", device)
                 }
             }
-        }
-        
-        shiftKey.setOnCheckedChangeListener { buttonView, isChecked ->
-            keyboard.changeModifiersState("shift", isChecked)
-        }
-        ctrlKey.setOnCheckedChangeListener { buttonView, isChecked ->
-            keyboard.changeModifiersState("ctrl", isChecked)
-        }
-        altKey.setOnCheckedChangeListener { buttonView, isChecked ->
-            keyboard.changeModifiersState("alt", isChecked)
-        }
 
-        timer.scheduleAtFixedRate(read, 0, 20)
+            fnKey.setOnClickListener {
+                var device: bDevice? = mainActivity.getDevice()
+                if (device != null) {
+                    keyboard.keyChange("", device)
+                    keyboard.keyChange("fn", device)
+                }
+            }
+
+            textInput.setOnKeyListener { v, keyCode, event ->
+                when (event.action) {
+                    KeyEvent.KEYCODE_ENTER -> {
+                        var device: bDevice? = mainActivity.getDevice()
+                        if (device != null) {
+                            keyboard.keyChange("", device)
+                            keyboard.keyChange("ent", device)
+                        }
+                        true
+                    }
+                    KeyEvent.KEYCODE_BACK -> {
+                        var device: bDevice? = mainActivity.getDevice()
+                        if (device != null) {
+                            keyboard.keyChange("", device)
+                            keyboard.keyChange("back", device)
+                        }
+                        true
+                    }
+                    else -> {
+                        false
+                    }
+                }
+            }
+
+            shiftKey.setOnCheckedChangeListener { buttonView, isChecked ->
+                keyboard.changeModifiersState("shift", isChecked)
+            }
+            ctrlKey.setOnCheckedChangeListener { buttonView, isChecked ->
+                keyboard.changeModifiersState("ctrl", isChecked)
+            }
+            altKey.setOnCheckedChangeListener { buttonView, isChecked ->
+                keyboard.changeModifiersState("alt", isChecked)
+            }
+
+            timer.scheduleAtFixedRate(read, 0, 20) // Read and send values every 20 milliseconds
+        }
     }
 
-    override fun onStop() {
+    override fun onStop() { // Stop keyboard server and start mouse server
         super.onStop()
-        timer.cancel()
-        keyboard.stop()
-        mainActivity.updateKeyboard(keyboard)
-        mouse.setPeripheralProvider()
-        mouse.start()
-        mainActivity.updateMouse(mouse)
+        if (initialiseError == null) {
+            timer.cancel()
+            keyboard.stop()
+            mainActivity.updateKeyboard(keyboard)
+            mouse.setPeripheralProvider()
+            mouse.start()
+            mainActivity.updateMouse(mouse)
+        }
     }
 }

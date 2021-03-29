@@ -14,33 +14,33 @@ class Matrix {
     constructor(r: Int, c: Int, array: FloatArray? = null) {
         row = r
         column = c
-        size = row*column
-        if (array != null){
-            if(array.size == size){
+        size = row * column
+        if (array != null) {
+            if (array.size == size) {
                 matrix = array
-            }else{
+            } else {
                 matrix = FloatArray(size)
                 matrix.fill(0F)
             }
-        }else{
+        } else {
             matrix = FloatArray(size)
             matrix.fill(0F)
         }
     }
 
-    fun copy(matrix: Matrix){
-        if (row == matrix.row && column == matrix.column){
-            for (x in 0 until size){
+    fun copy(matrix: Matrix) {
+        if (row == matrix.row && column == matrix.column) {
+            for (x in 0 until size) {
                 this.matrix[x] = matrix.matrix[x]
             }
         }
     }
 
-    fun toFloatArray():FloatArray {
+    fun toFloatArray(): FloatArray {
         return matrix
     }
 
-    fun zero(){
+    fun zero() {
         matrix.fill(0F)
     }
 
@@ -49,7 +49,7 @@ class Matrix {
             var result = FloatArray(matrix.size)
 
             for (x in 0 until matrix.size) {
-                result[x] = scalar * matrix.matrix[x];
+                result[x] = scalar * matrix.matrix[x]
             }
 
             return Matrix(matrix.row, matrix.column, result)
@@ -89,7 +89,7 @@ class Matrix {
             return Matrix(op1.row, op2.column, result)
         }
 
-        private fun transpose(matrix: Matrix): Matrix {
+        private fun transpose(matrix: Matrix): Matrix { // Flip the row number and column number of each element
             var result = FloatArray(matrix.size)
 
             for (x in 0 until matrix.row) {
@@ -101,8 +101,8 @@ class Matrix {
             return Matrix(matrix.row, matrix.column, result)
         }
 
-        fun determinant(matrix: Matrix): Float? {
-            return if (matrix.row != matrix.column){
+        fun determinant(matrix: Matrix): Float? { // Recursion with base case that matrix is 1 by 1
+            return if (matrix.row != matrix.column) {
                 null
             } else if (matrix.size == 1) {
                 matrix.matrix[0]
@@ -115,7 +115,7 @@ class Matrix {
             }
         }
 
-        private fun filter(matrix: Matrix, r: Int, c: Int): Matrix {
+        private fun filter(matrix: Matrix, r: Int, c: Int): Matrix { // Return matrix of elements in input matrix whose row number and column number are different from ones that specified
             var map = FloatArray((matrix.row - 1) * (matrix.column - 1))
             var index = 0
 
@@ -130,7 +130,7 @@ class Matrix {
             return Matrix(matrix.row - 1, matrix.column - 1, map)
         }
 
-        private fun cofactor(matrix: Matrix): Matrix {
+        private fun cofactor(matrix: Matrix): Matrix { // Return a matrix whose elements are multipled with 1 or -1
             var result = FloatArray(matrix.size)
             var sign = 1
             for (x in 0 until matrix.row) {
@@ -147,9 +147,9 @@ class Matrix {
         fun inverse(matrix: Matrix): Matrix? {
             var result = FloatArray(matrix.size)
 
-            return if (matrix.row != matrix.column || determinant(matrix) == 0f){
+            return if (matrix.row != matrix.column || determinant(matrix) == 0f) {
                 null
-            }else{
+            } else {
                 for (r in 0 until matrix.row) {
                     for (c in 0 until matrix.column) {
 
