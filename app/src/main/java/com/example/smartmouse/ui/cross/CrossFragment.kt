@@ -4,11 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import com.example.smartmouse.MainActivity
 import com.example.smartmouse.R
 import com.example.smartmouse.bluetooth.Mouse
+import kotlin.math.roundToInt
 
 class CrossFragment : Fragment() {
     private lateinit var mouse: Mouse
@@ -28,12 +30,14 @@ class CrossFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val upButton: ImageView = view.findViewById(R.id.button_upArrow)
-        val downButton: ImageView = view.findViewById(R.id.button_downArrow)
-        val leftButton: ImageView = view.findViewById(R.id.button_leftArrow)
-        val rightButton: ImageView = view.findViewById(R.id.button_rightArrow)
-        val leftClick: ImageView = view.findViewById(R.id.button_leftClick)
-        val rightClick: ImageView = view.findViewById(R.id.button_rightClick)
+        val upButton: ImageButton = view.findViewById(R.id.button_upArrow)
+        val downButton: ImageButton = view.findViewById(R.id.button_downArrow)
+        val leftButton: ImageButton = view.findViewById(R.id.button_leftArrow)
+        val rightButton: ImageButton = view.findViewById(R.id.button_rightArrow)
+        val leftClick: ImageButton = view.findViewById(R.id.button_leftClick)
+        val rightClick: ImageButton = view.findViewById(R.id.button_rightClick)
+        val upScroll: ImageButton = view.findViewById(R.id.button_upScroll)
+        val downScroll: ImageButton = view.findViewById(R.id.button_downScroll)
 
         upButton.setOnClickListener {
             var device = mainActivity.getDevice()
@@ -95,17 +99,48 @@ class CrossFragment : Fragment() {
             }
         }
 
+        upScroll.setOnClickListener {
+            var device = mainActivity.getDevice()
+            if (device != null) {
+                mouse.changeState(
+                    0,
+                    0,
+                    (0.5 * speed).roundToInt(),
+                    left = false,
+                    right = false,
+                    middle = false,
+                    device
+                )
+            }
+        }
+
+        downScroll.setOnClickListener {
+            var device = mainActivity.getDevice()
+            if (device != null) {
+                mouse.changeState(
+                    0,
+                    0,
+                    (-0.5 * speed).roundToInt(),
+                    left = false,
+                    right = false,
+                    middle = false,
+                    device
+                )
+            }
+        }
+
+
         leftClick.setOnClickListener {
             var device = mainActivity.getDevice()
             if (device != null) {
-                mouse.changeState(0, 0, 0, left = true, right = false, middle = false, device)
+                mouse.changeState(1, 0, 0, left = true, right = false, middle = false, device)
             }
         }
 
         rightClick.setOnClickListener {
             var device = mainActivity.getDevice()
             if (device != null) {
-                mouse.changeState(0, 0, 0, left = false, right = true, middle = false, device)
+                mouse.changeState(1, 0, 0, left = false, right = true, middle = false, device)
             }
         }
     }
