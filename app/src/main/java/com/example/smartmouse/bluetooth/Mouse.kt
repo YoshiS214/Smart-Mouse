@@ -27,6 +27,10 @@ class Mouse(var context: Context) : BLEActivity() {
         mouse.sendData(displacement, buttons, device)
     }
 
+    fun nullValue(device: bDevice){
+        mouse.sendData(intArrayOf(0,0,0), booleanArrayOf(false, false, false), device)
+    }
+
     override fun setPeripheralProvider(): String? {
         return mouse.initialise(context)
     }

@@ -133,7 +133,8 @@ class CrossFragment : Fragment() {
         leftClick.setOnClickListener {
             var device = mainActivity.getDevice()
             if (device != null) {
-                mouse.changeState(1, 0, 0, left = true, right = false, middle = false, device)
+                mouse.changeState(0, 0, 0, left = true, right = false, middle = false, device)
+                mouse.nullValue(device)
             }
         }
 
@@ -141,6 +142,7 @@ class CrossFragment : Fragment() {
             var device = mainActivity.getDevice()
             if (device != null) {
                 mouse.changeState(1, 0, 0, left = false, right = true, middle = false, device)
+                mouse.nullValue(device)
             }
         }
     }
