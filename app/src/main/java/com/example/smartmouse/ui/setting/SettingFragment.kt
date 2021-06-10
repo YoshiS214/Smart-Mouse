@@ -5,15 +5,22 @@ import android.app.AlertDialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.os.Handler
+import android.text.Html
+import android.text.method.LinkMovementMethod
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import com.example.smartmouse.MainActivity
 import com.example.smartmouse.R
 import com.example.smartmouse.bluetooth.Keyboard
 import com.example.smartmouse.bluetooth.Mouse
+import kotlinx.android.synthetic.main.fragment_setting.*
+import kotlinx.coroutines.*
+import java.lang.Runnable
 
 class SettingFragment : Fragment() {
     lateinit var mouse: Mouse
@@ -40,6 +47,10 @@ class SettingFragment : Fragment() {
         val mouseSeekBar: SeekBar = view.findViewById(R.id.seekbar_mouse)
         val resetButton: Button = view.findViewById(R.id.button_reset)
         val errorText: TextView = view.findViewById(R.id.text_error)
+        val howToText: TextView = view.findViewById(R.id.text_howTo)
+        val FAQsText: TextView = view.findViewById(R.id.text_FAQs)
+        val termsOfUseText: TextView = view.findViewById(R.id.text_termsOfUse)
+        val contactText: TextView = view.findViewById(R.id.text_contact)
         var adapter = ArrayAdapter(
             mainActivity.applicationContext,
             R.layout.spinner_style,
@@ -67,6 +78,9 @@ class SettingFragment : Fragment() {
 
         handler.post(runnable)
 
+        howToText.text = HtmlCompat.fromHtml("<a href=\"https://github.com/YoshiS214/Smart-Mouse/wiki/\">Guide to the app</a>", HtmlCompat.FROM_HTML_MODE_LEGACY)
+        howToText.movementMethod = LinkMovementMethod.getInstance()
+
         deviceNameSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>?,
@@ -84,19 +98,23 @@ class SettingFragment : Fragment() {
         peripheralSwitch.setOnCheckedChangeListener { compoundButton: CompoundButton, b: Boolean ->
             if (b) { // When turning on, try to start mouse server
                 compoundButton.setOnClickListener {
-                    initialiseError = mouse.setPeripheralProvider()
-                    if (initialiseError == null) {
-                        mouse.start()
-                        mainActivity.updateMouse(mouse)
-                    } else {
-                        errorText.text = initialiseError
-                        peripheralSwitch.isChecked = false
+                    GlobalScope.launch(Dispatchers.IO){
+                        initialiseError = mouse.setPeripheralProvider()
+                        if (initialiseError == null) {
+                            mouse.start()
+                            mainActivity.updateMouse(mouse)
+                            mainActivity.enableHid()
+                        } else {
+                            errorText.text = initialiseError
+                            peripheralSwitch.isChecked = false
+                        }
                     }
                 }
             } else { // When turing off, stop mouse server
                 compoundButton.setOnClickListener {
                     mouse.stop()
                     mainActivity.updateMouse(mouse)
+                    mainActivity.disableHid()
                 }
             }
         }
@@ -147,6 +165,6 @@ class SettingFragment : Fragment() {
                 show()
             }
         }
-        peripheralSwitch.isChecked = mouse.isStarted()
+        peripheralSwitch.isChecked = mainActivity.isHidEnabled()
     }
 }
