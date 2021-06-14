@@ -23,7 +23,6 @@ class Mouse2dFragment : Fragment() {
     private var speed by Delegates.notNull<Int>()
     private lateinit var timer: Timer
     private var scroll: Int = 0
-    private var ratio: Float = 1f
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -52,12 +51,9 @@ class Mouse2dFragment : Fragment() {
                 var tmp: Pair<FloatArray, FloatArray> = sensor.getDisplacement()
                 var device = mainActivity.getDevice()
                 if (device != null) {
-                    if (tmp.first.maxOrNull()!! > 1) { // If value received is too big, make it smaller
-                        ratio = 0.1f
-                    }
                     mouse.changeState(
-                        (tmp.first[0] * speed * ratio).roundToInt(),
-                        (tmp.first[1] * speed * ratio).roundToInt(),
+                        (tmp.first[0] * speed).roundToInt(),
+                        (tmp.first[1] * speed).roundToInt(),
                         scroll,
                         leftButton.isPressed,
                         rightButton.isPressed,

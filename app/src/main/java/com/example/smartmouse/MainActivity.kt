@@ -30,6 +30,7 @@ class MainActivity : AppCompatActivity() {
     private var selectedDevice: bDevice? = null   //Device wanted to control
     private lateinit var sensor: Sensor
     private var speed: Int = 0  // Speed of cursor moving
+    private var hidEnabled: Boolean = false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -138,6 +139,18 @@ class MainActivity : AppCompatActivity() {
 
     fun updateKeyboard(keyboard: Keyboard) {
         this.keyboard = keyboard
+    }
+
+    fun isHidEnabled(): Boolean{
+        return hidEnabled
+    }
+
+    fun enableHid(){
+        hidEnabled = true
+    }
+
+    fun disableHid(){
+        hidEnabled = false
     }
 
     fun getDevice(): bDevice? {

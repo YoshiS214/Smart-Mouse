@@ -40,11 +40,14 @@ class TrackPadGesture(mainActivity: MainActivity) : GestureDetector.SimpleOnGest
         return super.onScroll(e1, e2, distanceX, distanceY)
     }
 
+    /*
     override fun onDoubleTap(e: MotionEvent?): Boolean {
         drag = !drag
-        Toast.makeText(mainActivity.applicationContext, (if(drag)"Drag enabled" else "Drag disabled"), Toast.LENGTH_SHORT).show()
+        Toast.makeText(mainActivity.applicationContext, (if(drag)"Drag enabled" else "Drag disabled"), Toast.LENGTH_LONG).show()
         return super.onDoubleTap(e)
     }
+
+     */
 
     override fun onSingleTapUp(e: MotionEvent?): Boolean {
         var device: bDevice? = mainActivity.getDevice()
@@ -71,5 +74,11 @@ class TrackPadGesture(mainActivity: MainActivity) : GestureDetector.SimpleOnGest
             )
             mouse.nullValue(device)
         }
+    }
+
+    override fun onLongPress(e: MotionEvent?) {
+        drag = !drag
+        Toast.makeText(mainActivity.applicationContext, (if(drag)"Drag enabled" else "Drag disabled"), Toast.LENGTH_LONG).show()
+        super.onLongPress(e)
     }
 }

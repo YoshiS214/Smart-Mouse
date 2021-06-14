@@ -31,9 +31,11 @@ class Sensor(context: Context) : SensorEventListener {
 
     private val filterCoefficient: Float = 0.9F
 
+    private var counter: Int = 0
+
 
     override fun onSensorChanged(event: SensorEvent?) {
-        if (event != null) {
+        if (event != null && counter == 0) {
             when {
                 (event.sensor.type == Sensor.TYPE_ACCELEROMETER) -> System.arraycopy(
                     event.values,
@@ -60,6 +62,9 @@ class Sensor(context: Context) : SensorEventListener {
                 calculate()
             }
         }
+        if (counter != 0){
+            counter -= 1
+        }
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
@@ -67,6 +72,7 @@ class Sensor(context: Context) : SensorEventListener {
 
 
     fun enableSensor() {
+        counter = 100
         sensorManager.registerListener(
             this,
             sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
@@ -134,9 +140,11 @@ class Sensor(context: Context) : SensorEventListener {
             displacements.zero()
         }
         var tempDisplacements: FloatArray = temp.toFloatArray()
+
         for (x in tempDisplacements.indices) {
-            tempDisplacements[x] = tempDisplacements[x].div(1000000)
+            tempDisplacements[x] = tempDisplacements[x].toString().subSequence(0, 3).toString().toFloat().div(10)
         }
+
         Log.d(
             "SensorValue",
             "x:${tempDisplacements[0]}, y:${tempDisplacements[1]}, z:${tempDisplacements[2]}"

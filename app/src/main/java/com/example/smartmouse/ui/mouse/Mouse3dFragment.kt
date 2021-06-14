@@ -25,7 +25,6 @@ class Mouse3dFragment : Fragment() {
     private var speed by Delegates.notNull<Int>()
     private lateinit var timer: Timer
     private var active: Boolean = false
-    private var ratio: Float = 1f
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -53,13 +52,10 @@ class Mouse3dFragment : Fragment() {
                     var tmp: Pair<FloatArray, FloatArray> = sensor.getDisplacement()
                     var device = mainActivity.getDevice()
                     if (device != null) {
-                        if (tmp.first.maxOrNull()!! > 1) { // If value received is too big, make it smaller
-                            ratio = 0.1f
-                        }
                         mouse.changeState(
-                            (tmp.first[0] * speed * ratio).roundToInt(),
-                            (tmp.first[1] * speed * ratio).roundToInt(),
-                            (tmp.first[2] * speed * ratio).roundToInt(),
+                            (tmp.first[0] * speed).roundToInt(),
+                            (tmp.first[1] * speed).roundToInt(),
+                            (tmp.first[2] * speed).roundToInt(),
                             (tmp.second[2] > +Math.PI / 4), // If rotated anticlockwise, left click
                             (tmp.second[2] < -Math.PI / 4), // If rotated clockwise, right click
                             false,
@@ -86,7 +82,6 @@ class Mouse3dFragment : Fragment() {
                     active = false
                     sensor.disableSensor()
                 } else if (event.action == MotionEvent.ACTION_DOWN) {
-                    ratio = 1f
                     sensor.reset()
                     sensor.enableSensor()
                     timer.scheduleAtFixedRate(measure, 0, 10) // Every 10 milliseconds, send value
